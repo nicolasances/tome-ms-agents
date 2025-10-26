@@ -1,9 +1,10 @@
 import { TotoAPIController } from "toto-api-controller";
 import { ControllerConfig } from "./Config";
+import { HelloWorldAgent } from "./agents/test/HelloWorldAgent";
 
-const api = new TotoAPIController("toto-ms-ex1", new ControllerConfig(), { basePath: '/ex1' });
+const api = new TotoAPIController("tome-ms-agents", new ControllerConfig(), { basePath: '/tomeagents' });
 
-// api.path('POST', '/something', new PostSomething())
+api.path('POST', '/agents/helloworld/tasks', new HelloWorldAgent());
 
 api.init().then(() => {
     api.listen()
