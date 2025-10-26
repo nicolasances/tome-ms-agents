@@ -77,6 +77,12 @@ resource "github_actions_environment_secret" "toto-ms-xxx-secret-service-account
     secret_name = "SERVICE_ACCOUNT"
     plaintext_value = google_service_account.toto-ms-xxx-service-account.email
 }
+resource "github_actions_environment_secret" "toto-ms-xxx-secret-service-base-url" {
+    repository = "toto-ms-xxx"
+    environment = var.gcp_pid
+    secret_name = "SERVICE_BASE_URL"
+    plaintext_value = format("https://toto-ms-xxx-%s", var.cloud_run_endpoint_suffix)
+}
 
 # ---------------------------------------------------------------
 # 4. Google Secret Manager (Secrets)
