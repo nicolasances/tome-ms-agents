@@ -39,14 +39,14 @@ export class Gale {
         }
 
         // Register the agent in Gale's internal registry (API call).
-        this.logger.compute("", `Registering Agent [${agent.agentName}] for task [${agent.taskId}] with Gale Broker at [${this.config.galeBrokerURL}].`, "info");
-        this.logger.compute("", `Agent endpoint set to [${agentEndpoint}].`, "info");
+        this.logger.compute("", `Registering Agent [ ${agent.agentName} ] for task [ ${agent.taskId} ] with Gale Broker at [ ${this.config.galeBrokerURL} ].`, "info");
+        this.logger.compute("", `Agent [ ${agent.agentName} ] endpoint set to [ ${agentEndpoint} ].`, "info");
 
         const registrationResult = await new GakeBrokerAPI(this.config.galeBrokerURL).registerAgent({
             agentDefinition: new AgentDefinition(agent.agentName, agent.taskId, new TaskEndpoint(agentEndpoint))
         });
 
-        this.logger.compute("", `Agent [${agent.agentName}] successfully registered with Gale Broker.`, "info");
+        this.logger.compute("", `Agent [ ${agent.agentName} ] successfully registered with Gale Broker.`, "info");
 
     }
 }
