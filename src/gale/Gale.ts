@@ -33,7 +33,7 @@ export class Gale {
             const apiController = this.options.totoApiController;
 
             // Register the /tasks and /info endpoints for the Agent.
-            apiController.path('POST', agentTaskExecutionPath, new GaleAgentTaskDelegate(agent));
+            apiController.path('POST', agentTaskExecutionPath, new GaleAgentTaskDelegate(agent), { contentType: 'application/json', noAuth: true, ignoreBasePath: false });
             // TODO /info endpoint
 
         }
