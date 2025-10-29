@@ -8,10 +8,10 @@ const api = new TotoAPIController("tome-ms-agents", new ControllerConfig(), { ba
 
 const gale = new Gale(
     {
-        // baseURL: process.env.SERVICE_BASE_URL!,
-        // galeBrokerURL: `${String(process.env.GALE_BROKER_URL)}/galebroker`
-        baseURL: "http://localhost:8080",
-        galeBrokerURL: "http://localhost:8081/galebroker"
+        baseURL: process.env.SERVICE_BASE_URL!,
+        galeBrokerURL: `${String(process.env.GALE_BROKER_URL)}/galebroker`
+        // baseURL: "http://localhost:8080",
+        // galeBrokerURL: "http://localhost:8081/galebroker"
     },
     { totoApiController: api }
 );
