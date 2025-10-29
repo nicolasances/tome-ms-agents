@@ -25,6 +25,8 @@
     "mongodb": "^6.2.0",
     "path": "^0.12.7",
     "request": "^2.88.2",
+    "genkit": "^1.21.0",
+    "genkitx-aws-bedrock": "^1.9.2",
     "toto-api-controller": "^13.1.0"
   },
   "devDependencies": {
