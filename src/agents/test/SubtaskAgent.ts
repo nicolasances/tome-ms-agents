@@ -1,5 +1,5 @@
 import { GaleAgent } from "../../gale/GaleAgent";
-import { AgentTaskResponse } from "../../gale/model/AgentTask";
+import { AgentTaskRequest, AgentTaskResponse } from "../../gale/model/AgentTask";
 import { genkit, z } from 'genkit';
 import { awsBedrock, anthropicClaude37SonnetV1 } from "genkitx-aws-bedrock";
 
@@ -11,17 +11,15 @@ export class SubtaskAgent implements GaleAgent {
     agentName = "SubtaskOrchestrator";
     taskId = "testspawning";
 
-    async executeTask(taskInput: any): Promise<AgentTaskResponse> {
+    async executeTask(task: AgentTaskRequest): Promise<AgentTaskResponse> {
+        
+        const subtasks = [
+            { taskId: "sayhello" },
+            { taskId: "sayhello" },
+            { taskId: "sayhello" },
+        ]
 
-        return {
-            stopReason: "subtasks", 
-            taskOutput: {},
-            subtasks: [
-                {taskId: "sayhello"}, 
-                {taskId: "sayhello"}, 
-                {taskId: "sayhello"}, 
-            ]
-        }
+        return new AgentTaskResponse("subtasks", task.correlationId!, null, subtasks)
     }
 
 }

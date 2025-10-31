@@ -1,5 +1,5 @@
 import { GaleAgent } from "../../gale/GaleAgent";
-import { AgentTaskResponse } from "../../gale/model/AgentTask";
+import { AgentTaskRequest, AgentTaskResponse } from "../../gale/model/AgentTask";
 import { genkit, z } from 'genkit';
 import { awsBedrock, anthropicClaude37SonnetV1 } from "genkitx-aws-bedrock";
 
@@ -8,7 +8,7 @@ export class HelloWorldAgent implements GaleAgent {
     agentName = "HelloWorld";
     taskId = "sayhello";
 
-    async executeTask(taskInput: any): Promise<AgentTaskResponse> {
+    async executeTask(task: AgentTaskRequest): Promise<AgentTaskResponse> {
 
         const ai = genkit({
             plugins: [
@@ -22,10 +22,8 @@ export class HelloWorldAgent implements GaleAgent {
         console.log(response.text);
         
 
-        return {
-            stopReason: "completed", 
-            taskOutput: response.text
-        }
+
+        return new AgentTaskResponse("completed", task.correlationId!, response.text, undefined);
     }
 
 }
