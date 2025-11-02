@@ -10,20 +10,16 @@ export class HelloWorldAgent implements GaleAgent {
 
     async executeTask(task: AgentTaskRequest): Promise<AgentTaskResponse> {
 
-        const ai = genkit({
-            plugins: [
-                awsBedrock({ region: "eu-north-1" }),
-            ],
-            model: anthropicClaude37SonnetV1("eu"),
-        });
+        // const ai = genkit({
+        //     plugins: [
+        //         awsBedrock({ region: "eu-north-1" }),
+        //     ],
+        //     model: anthropicClaude37SonnetV1("eu"),
+        // });
 
-        const response = await ai.generate("Explain the theory of relativity in simple terms.");
+        // const response = await ai.generate("Explain the theory of relativity in simple terms.");
 
-        console.log(response.text);
-        
-
-
-        return new AgentTaskResponse("completed", task.correlationId!, response.text, undefined);
+        return new AgentTaskResponse("completed", task.correlationId!, { done: true });
     }
 
 }
