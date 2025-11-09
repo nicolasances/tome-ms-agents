@@ -4,7 +4,7 @@ import { HelloWorldAgent } from "./agents/test/HelloWorldAgent";
 import { Gale } from "./gale/Gale";
 import { SubtaskAgent } from "./agents/test/SubtaskAgent";
 
-const api = new TotoAPIController("tome-ms-agents", new ControllerConfig(), { basePath: '/tomeagents' });
+const api = new TotoAPIController(new ControllerConfig({ apiName: "tome-ms-agents" }), { basePath: '/tomeagents' });
 
 const gale = new Gale(
     {
