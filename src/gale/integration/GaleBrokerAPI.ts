@@ -1,9 +1,12 @@
 import http from "request";
 import { AgentDefinition } from "../model/AgentDefinition";
+import { AgentTaskRequest } from "../model/AgentTask";
+import { ExecutionContext } from "toto-api-controller";
+import { v4 as uuidv4 } from "uuid";
 
-export class GakeBrokerAPI {
+export class GaleBrokerAPI {
 
-    constructor(private galeBrokerURL: string) {}
+    constructor(private galeBrokerURL: string, private execContext?: ExecutionContext) {}
 
     /**
      * Executes the agent with the given input.
@@ -45,6 +48,39 @@ export class GakeBrokerAPI {
             })
         })
 
+    }
+
+    /**
+     * Posts a task to an agent for execution using Gale Broker API.
+     * 
+     * @param task the task
+     * 
+     * @returns 
+     */
+    async postTask(task: AgentTaskRequest, token: string): Promise<any> {
+
+        return new Promise<any>((success, failure) => {
+
+            http({
+                uri: `${this.galeBrokerURL}/tasks`,
+                method: 'POST',
+                headers: {
+                    'x-correlation-id': this.execContext?.cid || uuidv4(),
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(task)
+            }, (err: any, resp: any, body: any) => {
+
+                if (err) {
+                    console.log(err)
+                    failure(err);
+                    return;
+                }
+
+                success(body);
+            })
+        })
     }
 }
 

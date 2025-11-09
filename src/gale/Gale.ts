@@ -2,7 +2,7 @@ import { Logger, TotoAPIController } from "toto-api-controller";
 import { agentNameToPath } from "./util/NamingUtils";
 import { GaleAgent } from "./GaleAgent";
 import { GaleAgentTaskDelegate } from "./GaleAgentDelegate";
-import { GakeBrokerAPI } from "./integration/GakeBrokerAPI";
+import { GaleBrokerAPI } from "./integration/GaleBrokerAPI";
 import { TaskEndpoint } from "./model/TaskEndpoint";
 import { AgentDefinition } from "./model/AgentDefinition";
 
@@ -42,7 +42,7 @@ export class Gale {
         this.logger.compute("", `Registering Agent [ ${agent.agentName} ] for task [ ${agent.taskId} ] with Gale Broker at [ ${this.config.galeBrokerURL} ].`, "info");
         this.logger.compute("", `Agent [ ${agent.agentName} ] endpoint set to [ ${agentEndpoint} ].`, "info");
 
-        const registrationResult = await new GakeBrokerAPI(this.config.galeBrokerURL).registerAgent({
+        const registrationResult = await new GaleBrokerAPI(this.config.galeBrokerURL).registerAgent({
             agentDefinition: new AgentDefinition(agent.agentName, agent.taskId, new TaskEndpoint(agentEndpoint))
         });
 

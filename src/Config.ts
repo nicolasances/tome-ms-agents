@@ -1,5 +1,5 @@
 import { MongoClient } from 'mongodb';
-import { TotoControllerConfig, ValidatorProps, Logger, SecretsManager } from "toto-api-controller";
+import { TotoControllerConfig, ValidatorProps, Logger, SecretsManager, ConfigurationData } from "toto-api-controller";
 
 const dbName = 'mydb';
 const collections = {
@@ -12,6 +12,13 @@ export class ControllerConfig extends TotoControllerConfig {
 
     mongoUser: string | undefined;
     mongoPwd: string | undefined;
+    galeBrokerURL: string;
+
+    constructor(configuration: ConfigurationData, galeBrokerUrl?: string) {
+        super(configuration);
+        
+        this.galeBrokerURL = galeBrokerUrl || String(process.env.GALE_BROKER_URL);
+    }
 
     async load(): Promise<any> {
 
