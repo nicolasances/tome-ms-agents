@@ -3,7 +3,7 @@ import { AgentTaskRequest, AgentTaskResponse } from "../../gale/model/AgentTask"
 import { genkit, z } from 'genkit';
 import { awsBedrock, anthropicClaude37SonnetV1 } from "genkitx-aws-bedrock";
 
-export class HelloWorldAgent implements GaleAgent {
+export class HelloWorldAgent extends GaleAgent {
 
     agentName = "HelloWorld";
     taskId = "sayhello";

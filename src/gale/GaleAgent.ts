@@ -1,10 +1,14 @@
+import { Logger, TotoControllerConfig } from "toto-api-controller";
 import { AgentTaskRequest, AgentTaskResponse } from "./model/AgentTask";
 
-export interface GaleAgent {
+export abstract class GaleAgent {
 
-    agentName: string;
-    taskId: string;
+    logger: Logger | undefined; 
+    config: TotoControllerConfig | undefined;
 
-    executeTask(task: AgentTaskRequest): Promise<AgentTaskResponse>;
+    abstract agentName: string;
+    abstract taskId: string;
+
+    abstract executeTask(task: AgentTaskRequest): Promise<AgentTaskResponse>;
 
 }

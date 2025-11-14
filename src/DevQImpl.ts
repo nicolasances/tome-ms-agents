@@ -1,6 +1,5 @@
 import { Request } from "express";
-import { APubSubImplementation, APubSubRequestValidator, TotoMessage } from "toto-api-controller";
-import { APubSubRequestFilter } from "toto-api-controller/dist/evt/PubSubImplementation";
+import { APubSubImplementation, APubSubRequestValidator, TotoMessage, APubSubRequestFilter } from "toto-api-controller";
 
 export class DevQImpl extends APubSubImplementation {
 
