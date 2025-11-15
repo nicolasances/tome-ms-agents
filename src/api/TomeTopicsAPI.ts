@@ -9,7 +9,7 @@ export class TomeTopicsAPI extends TotoAPI {
      * @returns the topic response
      */
     async getTopic(topicId: string, cid?: string): Promise<GetTopicResponse> {
-        return this.get(new TotoAPIRequest(`/topics/${topicId}`, cid), GetTopicResponse);
+        return this.get(new TotoAPIRequest(`/topics/${topicId}`, null, cid), GetTopicResponse);
     }
 
 }
