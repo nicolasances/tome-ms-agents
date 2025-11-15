@@ -5,7 +5,7 @@ import { AgentTaskRequest, AgentTaskResponse } from "../../gale/model/AgentTask"
 /**
  * Test agent that only spawns subtasks. 
  */
-export class SubtaskAgent implements GaleAgent {
+export class SubtaskAgent extends GaleAgent {
 
     agentName = "SubtaskOrchestrator";
     taskId = "testspawning";

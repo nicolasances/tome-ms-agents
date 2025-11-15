@@ -12,6 +12,9 @@ export class GaleAgentTaskDelegate implements TotoDelegate {
         const logger = execContext.logger;
         const cid = execContext.cid;
 
+        this.agent.logger = logger;
+        this.agent.config = execContext.config;
+
         const agentTaskRequest = AgentTaskRequest.fromHTTPRequest(req);
 
         logger.compute(cid, `Received request to execute task with correlation Id ${agentTaskRequest.correlationId}`, "info");

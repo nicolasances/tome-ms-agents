@@ -1,10 +1,14 @@
 import { MongoClient } from 'mongodb';
-import { TotoControllerConfig, ValidatorProps, Logger, SecretsManager, ConfigurationData } from "toto-api-controller";
+import { TotoControllerConfig, TotoControllerConfigOptions, ValidatorProps, Logger, SecretsManager, ConfigurationData } from "toto-api-controller";
 
 const dbName = 'mydb';
 const collections = {
     coll1: 'coll1',
 };
+
+export const API_DEPENDENCIES = {
+    tomeTopics: "tome-ms-topics"
+}
 
 export class ControllerConfig extends TotoControllerConfig {
 
@@ -14,8 +18,8 @@ export class ControllerConfig extends TotoControllerConfig {
     mongoPwd: string | undefined;
     galeBrokerURL: string;
 
-    constructor(configuration: ConfigurationData, galeBrokerUrl?: string) {
-        super(configuration);
+    constructor(configuration: ConfigurationData, galeBrokerUrl?: string, controllerConfigOptions?: TotoControllerConfigOptions) {
+        super(configuration, controllerConfigOptions);
         
         this.galeBrokerURL = galeBrokerUrl || String(process.env.GALE_BROKER_URL);
     }
