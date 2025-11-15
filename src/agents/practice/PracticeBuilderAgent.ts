@@ -33,20 +33,32 @@ export class PracticeBuilderAgent extends GaleAgent {
             }
 
             // 1.2. For each section, create a subtask to classify the section
-            const subtasks: SubTaskInfo[] = topic.sections.map(section => {
+            const subtasks: SubTaskInfo[] = topic.sections.map((section, index) => {
                 return {
                     taskId: "topic.section.classify", 
                     taskInputData: {
                         topicId: topic.id, 
                         topicCode: topic.topicCode,
-                        sectionCode: section
+                        sectionCode: section, 
+                        sectionIndex: index
                     }
                 }
             });
 
             return new AgentTaskResponse("subtasks", task.correlationId!, null, subtasks, "sections-classification-group")
         }
-        // Step 2: Generate overall classification & trigger next step
+        else if (task.command.command == 'resume') {
+            
+            this.logger?.compute(cid, `Resuming practice building for topic [${task.taskInputData?.topicId} - ${task.taskInputData?.topicCode}]`, "info");
+            
+            // Step 2: Generate overall classification & trigger next step
+            if (task.command.completedSubtaskGroupId == "sections-classification-group") {
+
+                this.logger?.compute(cid, `All sections classified for topic [${task.taskInputData?.topicId} - ${task.taskInputData?.topicCode}]`, "info");
+
+            }
+
+        }
 
         const response = new AgentTaskResponse("completed", task.correlationId!, {done: true});
 
