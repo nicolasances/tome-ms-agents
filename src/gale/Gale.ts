@@ -41,8 +41,11 @@ export class Gale {
         this.logger.compute("", `Registering Agent [ ${agent.manifest.agentName} ] for task [ ${agent.manifest.taskId} ] with Gale Broker at [ ${this.config.galeBrokerURL} ].`, "info");
         this.logger.compute("", `Agent [ ${agent.manifest.agentName} ] endpoint set to [ ${agentEndpoint} ].`, "info");
 
+        // Create the Agent Definition and register it
+        const agentDefinition = new AgentDefinition(agent.manifest, new TaskEndpoint(agentEndpoint));
+
         const registrationResult = await new GaleBrokerAPI(this.config.galeBrokerURL).registerAgent({
-            agentDefinition: new AgentDefinition(agent.manifest.agentName, agent.manifest.taskId, new TaskEndpoint(agentEndpoint))
+            agentDefinition: agentDefinition
         });
 
         this.logger.compute("", `Agent [ ${agent.manifest.agentName} ] successfully registered with Gale Broker.`, "info");

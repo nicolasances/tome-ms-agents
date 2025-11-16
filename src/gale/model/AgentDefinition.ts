@@ -1,39 +1,25 @@
 import { ValidationError } from "toto-api-controller";
 import { TaskEndpoint } from "./TaskEndpoint";
 import { TaskId } from "./TaskId";
+import { GaleAgentManifest } from "../GaleAgent";
+import zodToJsonSchema from "zod-to-json-schema";
 
 export class AgentDefinition {
 
-    name: string; // The name of the Agent.
-    taskId: TaskId; // The unique identifier of the type of task this Agent can execute.
-    endpoint: TaskEndpoint; // The endpoint (URL) where the Agent can be reached.
-    orchestrator: boolean;
+    name: string = ""; // The name of the Agent.
+    description: string = ""; // The description of the Agent.
+    taskId: TaskId = ""; // The unique identifier of the type of task this Agent can execute.
+    inputSchema: any = {}; 
+    outputSchema: any = {}; 
+    endpoint: TaskEndpoint = new TaskEndpoint(""); // The endpoint (URL) where the Agent can be reached.
 
-    constructor(name: string, taskId: TaskId, endpoint: TaskEndpoint, orchestrator: boolean = false) {
-        this.name = name;
-        this.taskId = taskId;
+    constructor(manifest: GaleAgentManifest, endpoint: TaskEndpoint) {
+        this.name = manifest.agentName;
+        this.description = manifest.description;
+        this.taskId = manifest.taskId;
+        this.inputSchema = zodToJsonSchema(manifest.inputSchema);
+        this.outputSchema = zodToJsonSchema(manifest.outputSchema);
         this.endpoint = endpoint;
-        this.orchestrator = orchestrator;
     }
 
-    static fromJSON(data: any): AgentDefinition {
-
-        if (!data.name || !data.taskId || !data.endpoint) throw new ValidationError(400, `Invalid AgentDefinition JSON: missing required fields. Received ${JSON.stringify(data)}.`);
-
-        return new AgentDefinition(
-            data.name,
-            data.taskId,
-            TaskEndpoint.fromJSON(data.endpoint),
-            data.orchestrator
-        );
-    }
-
-    static fromBSON(data: any): AgentDefinition {
-        return new AgentDefinition(
-            data.name,
-            data.taskId,
-            TaskEndpoint.fromBSON(data.endpoint),
-            data.orchestrator
-        );
-    }
 }
