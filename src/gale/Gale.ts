@@ -1,7 +1,7 @@
 import { Logger, TotoAPIController } from "toto-api-controller";
 import { agentNameToPath } from "./util/NamingUtils";
 import { GaleAgent } from "./GaleAgent";
-import { GaleAgentTaskDelegate } from "./GaleAgentDelegate";
+import { GaleAgentInfoDelegate, GaleAgentTaskDelegate } from "./GaleAgentDelegate";
 import { GaleBrokerAPI } from "./integration/GaleBrokerAPI";
 import { TaskEndpoint } from "./model/TaskEndpoint";
 import { AgentDefinition } from "./model/AgentDefinition";
@@ -14,13 +14,13 @@ export class Gale {
         this.logger = new Logger("Gale");
     }
 
-    async registerAgent(agent: GaleAgent): Promise<void> {
+    async registerAgent(agent: GaleAgent<any, any>): Promise<void> {
 
         // Validations 
         if (!this.config.baseURL) throw new Error("Gale configuration error: baseURL is not defined.");
 
         // Determine the name for the agent to use in the path
-        const agentPath = agentNameToPath(agent.agentName);
+        const agentPath = agentNameToPath(agent.manifest.agentName);
         const agentTaskExecutionPath = `/agents/${agentPath}/tasks`;
         const agentInfoPath = `/agents/${agentPath}/info`;
 
@@ -34,19 +34,18 @@ export class Gale {
 
             // Register the /tasks and /info endpoints for the Agent.
             apiController.path('POST', agentTaskExecutionPath, new GaleAgentTaskDelegate(agent));
-            // TODO /info endpoint
-
+            apiController.path('GET', agentInfoPath, new GaleAgentInfoDelegate(agent));
         }
 
         // Register the agent in Gale's internal registry (API call).
-        this.logger.compute("", `Registering Agent [ ${agent.agentName} ] for task [ ${agent.taskId} ] with Gale Broker at [ ${this.config.galeBrokerURL} ].`, "info");
-        this.logger.compute("", `Agent [ ${agent.agentName} ] endpoint set to [ ${agentEndpoint} ].`, "info");
+        this.logger.compute("", `Registering Agent [ ${agent.manifest.agentName} ] for task [ ${agent.manifest.taskId} ] with Gale Broker at [ ${this.config.galeBrokerURL} ].`, "info");
+        this.logger.compute("", `Agent [ ${agent.manifest.agentName} ] endpoint set to [ ${agentEndpoint} ].`, "info");
 
         const registrationResult = await new GaleBrokerAPI(this.config.galeBrokerURL).registerAgent({
-            agentDefinition: new AgentDefinition(agent.agentName, agent.taskId, new TaskEndpoint(agentEndpoint))
+            agentDefinition: new AgentDefinition(agent.manifest.agentName, agent.manifest.taskId, new TaskEndpoint(agentEndpoint))
         });
 
-        this.logger.compute("", `Agent [ ${agent.agentName} ] successfully registered with Gale Broker.`, "info");
+        this.logger.compute("", `Agent [ ${agent.manifest.agentName} ] successfully registered with Gale Broker.`, "info");
 
     }
 }
