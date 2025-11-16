@@ -37,6 +37,20 @@ export class SectionClassificationAgent extends GaleAgent<typeof SectionClassifi
             throw new Error("Task input data is required");
         }
 
+        // Check the input matches the schema
+        try {
+
+            SectionClassificationAgent.inputSchema.parse(task.taskInputData);
+
+        } catch (error) {
+            
+            if (error instanceof z.ZodError) {
+                logger.compute(cid, `Input validation error: ${error.message}`, "error");
+                
+                return new AgentTaskResponse("failed", cid, {topicCode: task.taskInputData.topicCode, sectionCode: task.taskInputData.sectionCode, sectionIndex: task.taskInputData.sectionIndex, labels: [] });
+            }
+        }
+
         const ai = genkit({
             plugins: [
                 awsBedrock({ region: "eu-north-1" }),

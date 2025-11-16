@@ -28,9 +28,7 @@ export class GaleAgentTaskDelegate implements TotoDelegate {
             parentTask: req.body.parentTask
         });
 
-        logger.compute(cid, `Received request to execute task with correlation Id ${agentTaskRequest.correlationId}`, "info");
-
-        const response = await this.agent.executeTask(agentTaskRequest);
+        const response = await this.agent.run(agentTaskRequest);
 
         return response;
     }

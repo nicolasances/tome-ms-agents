@@ -3,7 +3,7 @@ import { ControllerConfig } from "./Config";
 import { Gale } from "./gale/Gale";
 import { OnTopicEventHandler } from "./evt/OnTopicEvent";
 import { DevQImpl } from "./DevQImpl";
-import { PracticeBuilderAgent } from "./agents/practice/PracticeBuilderAgent";
+import { PracticeBuilderOrchestratorAgent } from "./agents/practice/PracticeBuilderOrchestratorAgent";
 import { SectionClassificationAgent } from "./agents/practice/SectionClassificationAgent";
 
 // const galeBrokerURL = `${String(process.env.GALE_BROKER_URL)}`;
@@ -24,7 +24,7 @@ const gale = new Gale(
     { totoApiController: api }
 );
 
-gale.registerAgent(new PracticeBuilderAgent());
+gale.registerAgent(new PracticeBuilderOrchestratorAgent());
 gale.registerAgent(new SectionClassificationAgent());
 
 api.registerPubSubEventHandler('topic', new OnTopicEventHandler())
