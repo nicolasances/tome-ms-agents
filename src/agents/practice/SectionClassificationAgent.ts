@@ -32,24 +32,7 @@ export class SectionClassificationAgent extends GaleAgent<typeof SectionClassifi
 
         const cid = task.correlationId || "no-cid";
         const logger = this.logger!;
-
-        if (!task.taskInputData) {
-            throw new Error("Task input data is required");
-        }
-
-        // Check the input matches the schema
-        try {
-
-            SectionClassificationAgent.inputSchema.parse(task.taskInputData);
-
-        } catch (error) {
-            
-            if (error instanceof z.ZodError) {
-                logger.compute(cid, `Input validation error: ${error.message}`, "error");
-                
-                return new AgentTaskResponse("failed", cid, {topicCode: task.taskInputData.topicCode, sectionCode: task.taskInputData.sectionCode, sectionIndex: task.taskInputData.sectionIndex, labels: [] });
-            }
-        }
+        const inputData = task.taskInputData!;
 
         const ai = genkit({
             plugins: [
@@ -58,10 +41,10 @@ export class SectionClassificationAgent extends GaleAgent<typeof SectionClassifi
             model: anthropicClaude37SonnetV1("eu"),
         });
 
-        logger.compute(cid, `Classifying section [${task.taskInputData.sectionCode}] for topic [${task.taskInputData.topicId} - ${task.taskInputData.topicCode}]`, "info");
+        logger.compute(cid, `Classifying section [${inputData.sectionCode}] for topic [${inputData.topicId} - ${inputData.topicCode}]`, "info");
 
         // 1. Retrieve section content
-        const sectionContent = await new TomeKnowledgeBase(this.config!).getSectionContent(task.taskInputData.topicCode, task.taskInputData.sectionCode, task.taskInputData.sectionIndex);
+        const sectionContent = await new TomeKnowledgeBase(this.config!).getSectionContent(inputData.topicCode, inputData.sectionCode, inputData.sectionIndex);
 
         // 2. Use an LLM to classify the section content
         const labels: Label[] = [
@@ -88,9 +71,9 @@ export class SectionClassificationAgent extends GaleAgent<typeof SectionClassifi
 
         // 3. Return classification result
         return new AgentTaskResponse("completed", cid, {
-            topicCode: task.taskInputData?.topicCode,
-            sectionCode: task.taskInputData?.sectionCode,
-            sectionIndex: task.taskInputData?.sectionIndex,
+            topicCode: inputData.topicCode,
+            sectionCode: inputData.sectionCode,
+            sectionIndex: inputData.sectionIndex,
             labels: response.output?.labels || []
         });
     }
