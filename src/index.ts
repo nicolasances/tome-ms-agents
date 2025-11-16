@@ -6,9 +6,7 @@ import { DevQImpl } from "./DevQImpl";
 import { PracticeBuilderOrchestratorAgent } from "./agents/practice/PracticeBuilderOrchestratorAgent";
 import { SectionClassificationAgent } from "./agents/practice/SectionClassificationAgent";
 
-// const galeBrokerURL = `${String(process.env.GALE_BROKER_URL)}`;
-const galeBrokerURL = "http://localhost:8081/galebroker";
-// const galeBrokerURL = "https://api.dev.toto.nimoto.eu/galebroker";
+const galeBrokerURL = `${String(process.env.GALE_BROKER_URL)}`;
 
 const config = new ControllerConfig({ apiName: "tome-ms-agents" }, galeBrokerURL, {defaultHyperscaler: "aws", defaultSecretsManagerLocation: "aws"});
 
@@ -17,8 +15,7 @@ api.registerPubSubImplementation(new DevQImpl(config, config.logger!));
 
 const gale = new Gale(
     {
-        // baseURL: process.env.SERVICE_BASE_URL!,
-        baseURL: "http://localhost:8080",
+        baseURL: process.env.SERVICE_BASE_URL!,
         galeBrokerURL: galeBrokerURL
     },
     { totoApiController: api }
