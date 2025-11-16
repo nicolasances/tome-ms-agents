@@ -16,7 +16,7 @@ export class OnTopicEventHandler implements ITotoPubSubEventHandler {
             const token = newTotoServiceToken(execContext.config);
 
             // Create the task
-            const task: AgentTaskRequest = {
+            const task: AgentTaskRequest<any> = {
                 taskId: "topic.practice.build",
                 command: { command: 'start' }, 
                 taskInputData: {

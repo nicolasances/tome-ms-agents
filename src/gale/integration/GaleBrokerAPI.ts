@@ -57,7 +57,7 @@ export class GaleBrokerAPI {
      * 
      * @returns 
      */
-    async postTask(task: AgentTaskRequest, token: string): Promise<any> {
+    async postTask(task: AgentTaskRequest<any>, token: string): Promise<any> {
 
         return new Promise<any>((success, failure) => {
 

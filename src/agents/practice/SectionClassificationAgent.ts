@@ -1,18 +1,41 @@
-import { GaleAgent } from "../../gale/GaleAgent";
+import { GaleAgent, GaleAgentManifest } from "../../gale/GaleAgent";
 import { AgentTaskRequest, AgentTaskResponse } from "../../gale/model/AgentTask";
 import { genkit, z } from 'genkit';
 import { awsBedrock, anthropicClaude37SonnetV1 } from "genkitx-aws-bedrock";
 import { TomeKnowledgeBase } from "../../tomekb/TomeKnowledgeBase";
 
-export class SectionClassificationAgent extends GaleAgent {
+export class SectionClassificationAgent extends GaleAgent<typeof SectionClassificationAgent.inputSchema, typeof SectionClassificationAgent.outputSchema> {
 
-    agentName: string = "TomeSectionClassifier";
-    taskId: string = "topic.section.classify";
+    static inputSchema = z.object({
+        topicId: z.string().describe("Unique identifier (database ID) of the Tome Topic to build practice for."),
+        topicCode: z.string().describe("Unique code of the Tome Topic to build practice for. E.g. the-merovingians"),
+        sectionCode: z.string().describe("Code of the section to classify. E.g. 'boniface-viii'"),
+        sectionIndex: z.number().describe("Index of the section within the topic."),
+    });
 
-    async executeTask(task: AgentTaskRequest): Promise<AgentTaskResponse> {
+    static outputSchema = z.object({
+        topicCode: z.string().describe("Unique code of the Tome Topic."),
+        sectionCode: z.string().describe("Code of the section that was classified."),
+        sectionIndex: z.number().describe("Index of the section within the topic."),
+        labels: z.array(z.string()).describe("List of labels assigned to the section content."),
+    });
+
+    manifest: GaleAgentManifest = {
+        agentName: "TomeSectionClassifier",
+        taskId: "topic.section.classify",
+        inputSchema: SectionClassificationAgent.inputSchema,
+        outputSchema: SectionClassificationAgent.outputSchema,
+        description: "Agent for labelling sections of a Tome Topic. This agent analyzes the content of a section and assigns one or more predefined labels based on the content's characteristics."
+    };
+
+    async executeTask(task: AgentTaskRequest<typeof SectionClassificationAgent.inputSchema>): Promise<AgentTaskResponse<typeof SectionClassificationAgent.outputSchema>> {
 
         const cid = task.correlationId || "no-cid";
         const logger = this.logger!;
+
+        if (!task.taskInputData) {
+            throw new Error("Task input data is required");
+        }
 
         const ai = genkit({
             plugins: [
@@ -21,10 +44,10 @@ export class SectionClassificationAgent extends GaleAgent {
             model: anthropicClaude37SonnetV1("eu"),
         });
 
-        logger.compute(cid, `Classifying section [${task.taskInputData?.sectionCode}] for topic [${task.taskInputData?.topicId} - ${task.taskInputData?.topicCode}]`, "info");
+        logger.compute(cid, `Classifying section [${task.taskInputData.sectionCode}] for topic [${task.taskInputData.topicId} - ${task.taskInputData.topicCode}]`, "info");
 
         // 1. Retrieve section content
-        const sectionContent = await new TomeKnowledgeBase(this.config!).getSectionContent(task.taskInputData.topicCode, task.taskInputData!.sectionCode, task.taskInputData!.sectionIndex);
+        const sectionContent = await new TomeKnowledgeBase(this.config!).getSectionContent(task.taskInputData.topicCode, task.taskInputData.sectionCode, task.taskInputData.sectionIndex);
 
         // 2. Use an LLM to classify the section content
         const labels: Label[] = [
@@ -54,7 +77,7 @@ export class SectionClassificationAgent extends GaleAgent {
             topicCode: task.taskInputData?.topicCode,
             sectionCode: task.taskInputData?.sectionCode,
             sectionIndex: task.taskInputData?.sectionIndex,
-            labels: response.output?.labels
+            labels: response.output?.labels || []
         });
     }
 
