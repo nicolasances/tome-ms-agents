@@ -14,14 +14,17 @@ export class SectionGenealogyAgent extends GaleAgent<typeof SectionGenealogyAgen
         sectionIndex: z.number().describe("Index of the section within the topic."),
     });
 
-    static generalogiesSchema = z.array(z.array(z.string())).describe("List of genealogical information detected in the section content. Each genealogy is represented as an array of 3 strings, where the first string is the subject, the second string the relationship and the third string the object. E.g. ['Jack, 'son', 'John']");
+    static responseSchema = z.object({
+        genealogies: z.array(z.array(z.string())).describe("List of genealogical information detected in the section content. Each genealogy is represented as an array of 3 strings, where the first string is the subject, the second string the relationship and the third string the object. E.g. ['Jack, 'son', 'John']"),
+        people: z.array(z.array(z.string())).describe("List of people mentioned in the section content with a description of who they are. The array contains arrays of 2 strings, where the first string is the name of the person and the second string is an description of the person that can be used to univoquely identify it in history. E.g. ['Pippin', 'Pippin the Short, King of the Franks from 751 to 768']"),
+    });
 
     static outputSchema = z.object({
         topicId: z.string().describe("Unique identifier (database ID) of the Tome Topic."),
         topicCode: z.string().describe("Unique code of the Tome Topic."),
         sectionCode: z.string().describe("Code of the section that was classified."),
         sectionIndex: z.number().describe("Index of the section within the topic."),
-        genealogies: SectionGenealogyAgent.generalogiesSchema
+        info: SectionGenealogyAgent.responseSchema.describe("Genealogical information extracted from the section content."),
     });
 
     manifest: GaleAgentManifest = {
@@ -64,7 +67,7 @@ export class SectionGenealogyAgent extends GaleAgent<typeof SectionGenealogyAgen
             ${sectionContent}
         `
 
-        const response = await ai.generate({ prompt: prompt, output: { schema: SectionGenealogyAgent.generalogiesSchema } });
+        const response = await ai.generate({ prompt: prompt, output: { schema: SectionGenealogyAgent.responseSchema } });
 
         // 3. Return classification result
         return new AgentTaskResponse("completed", cid, {
@@ -72,7 +75,7 @@ export class SectionGenealogyAgent extends GaleAgent<typeof SectionGenealogyAgen
             topicCode: inputData.topicCode,
             sectionCode: inputData.sectionCode,
             sectionIndex: inputData.sectionIndex,
-            genealogies: response.output || []
+            info: response.output!
         });
     }
 }

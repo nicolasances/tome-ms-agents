@@ -6,6 +6,7 @@ import { DevQImpl } from "./DevQImpl";
 import { PracticeBuilderOrchestratorAgent } from "./agents/practice/PracticeBuilderOrchestratorAgent";
 import { SectionClassificationAgent } from "./agents/practice/SectionClassificationAgent";
 import { SectionGenealogyAgent } from "./agents/practice/SectionGenealogyAgent";
+import { TopicGenealogyAgent } from "./agents/practice/TopicGenealogyAgent";
 
 const galeBrokerURL = `${String(process.env.GALE_BROKER_URL)}`;
 
@@ -25,6 +26,7 @@ const gale = new Gale(
 gale.registerAgent(new PracticeBuilderOrchestratorAgent());
 gale.registerAgent(new SectionClassificationAgent());
 gale.registerAgent(new SectionGenealogyAgent());
+gale.registerAgent(new TopicGenealogyAgent());
 
 api.registerPubSubEventHandler('topic', new OnTopicEventHandler())
 

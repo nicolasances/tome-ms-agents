@@ -110,6 +110,21 @@ export class PracticeBuilderOrchestratorAgent extends GaleOrchestratorAgent<type
                 return new AgentTaskOrchestratorResponse("subtasks", cid, undefined, subtasks, "sections-genealogy-group")
 
             }
+            else if (task.command.completedSubtaskGroupId == "sections-genealogy-group") {
+
+                logger.compute(cid, `Consolidating genealogy information for topic [${inputData.originalInput.topicId}]`, "info");
+
+                const subtasks: SubTaskInfo[] = [{
+                    taskId: "topic.genealogy",
+                    taskInputData: {
+                        topicId: inputData.originalInput.topicId,
+                        topicCode: inputData.originalInput.topicCode,
+                        sectionsData: inputData.childrenOutputs.map(child => child.info)
+                    }
+                }]
+
+                return new AgentTaskOrchestratorResponse("subtasks", cid, undefined, subtasks, "topic-genealogy-group")
+            }
 
         }
 
