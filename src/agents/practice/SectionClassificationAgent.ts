@@ -50,7 +50,7 @@ export class SectionClassificationAgent extends GaleAgent<typeof SectionClassifi
         const labels: Label[] = [
             new Label("history", "This label can be only used for text that describes historical events, figures, or periods. Use this label when the content focuses mainly on a historical subject, event or era. "),
             new Label("timeline", "This label is appropriate for text that contain events that have a chronological ordering. Use this label when the content contains sequences of events where chronological order can be determined."),
-            new Label("genealogy", "This label should be used for text that describes some level of family histories, lineages, or ancestral connections. Use this label when the content focuses on tracing relationships between individuals or families across generations."),
+            new Label("genealogy", "This label should be used for text that contain genealogical information. For example text that contains family relationships, lineages, or ancestry details should be classified with this label."),
         ]
 
         const classificationPrompt = `
