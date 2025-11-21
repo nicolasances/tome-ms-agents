@@ -51,7 +51,7 @@ export class SectionClassificationAgent extends GaleAgent<typeof SectionClassifi
         const labels: Label[] = [
             new Label("history", "This label can be only used for text that describes historical events, figures, or periods. Use this label when the content focuses mainly on a historical subject, event or era. "),
             new Label("timeline", "This label is appropriate for text that contain events that have a chronological ordering. Use this label when the content contains sequences of events where chronological order can be determined."),
-            new Label("genealogy", "This label should be used for text that contain ANY genealogical information. Genealogical information of interest is ANY of the following family relationships: child, parent, sibling, spouse, grandparent, grandchild, uncle, aunt, nephew, niece, cousin."),
+            new Label("genealogy", "This label should be used for text that contain ANY genealogical information. Genealogical information of interest is ANY and ONLY of the following family relationships: child, parent, sibling, spouse, grandparent, grandchild."),
         ]
 
         const classificationPrompt = `

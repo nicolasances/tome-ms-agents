@@ -55,8 +55,8 @@ export class SectionGenealogyAgent extends GaleAgent<typeof SectionGenealogyAgen
             Given the following content, identify and extract genealogical relationships in the form of triples: (subject, relationship, object).
             The subject and object are names of individuals, and the relationship describes their familial connection (e.g., parent, child, sibling, spouse).
 
-            Allowed family connections are ONLY: child, parent, sibling, spouse, grandparent, grandchild, uncle, aunt, nephew, niece, cousin.
-            Discard any information that does not fit into these relationships.
+            ALLOWED family connections are ONLY: child, parent, sibling, spouse, grandparent, grandchild.
+            DISCARD any information that does not fit into these relationships. DO NOT add relationship types that are not in the allowed list.
 
             Make sure to avoid duplicates and symmetric entries (e.g., if you have (Alice, parent, Bob), do not include (Bob, child, Alice)).
 
