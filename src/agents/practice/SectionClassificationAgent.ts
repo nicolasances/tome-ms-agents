@@ -21,7 +21,7 @@ export class SectionClassificationAgent extends GaleAgent<typeof SectionClassifi
     });
 
     manifest: GaleAgentManifest = {
-        agentName: "TomeSectionClassifier",
+        agentName: "Tome Section Classifier",
         taskId: "topic.section.classify",
         inputSchema: SectionClassificationAgent.inputSchema,
         outputSchema: SectionClassificationAgent.outputSchema,

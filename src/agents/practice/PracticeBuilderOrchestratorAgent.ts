@@ -28,7 +28,7 @@ export class PracticeBuilderOrchestratorAgent extends GaleOrchestratorAgent<type
     });
 
     manifest: GaleOrchestratorAgentManifest = {
-        agentName: "TomePracticeBuilder",
+        agentName: "Tome Practice Builder",
         taskId: "topic.practice.build",
         inputSchema: PracticeBuilderOrchestratorAgent.inputSchema,
         outputSchema: PracticeBuilderOrchestratorAgent.outputSchema,
