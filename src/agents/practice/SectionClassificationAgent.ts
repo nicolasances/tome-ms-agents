@@ -14,6 +14,7 @@ export class SectionClassificationAgent extends GaleAgent<typeof SectionClassifi
     });
 
     static outputSchema = z.object({
+        topicId: z.string().describe("Unique identifier (database ID) of the Tome Topic."),
         topicCode: z.string().describe("Unique code of the Tome Topic."),
         sectionCode: z.string().describe("Code of the section that was classified."),
         sectionIndex: z.number().describe("Index of the section within the topic."),
@@ -21,7 +22,7 @@ export class SectionClassificationAgent extends GaleAgent<typeof SectionClassifi
     });
 
     manifest: GaleAgentManifest = {
-        agentName: "TomeSectionClassifier",
+        agentName: "Tome Section Classifier",
         taskId: "topic.section.classify",
         inputSchema: SectionClassificationAgent.inputSchema,
         outputSchema: SectionClassificationAgent.outputSchema,
@@ -50,7 +51,7 @@ export class SectionClassificationAgent extends GaleAgent<typeof SectionClassifi
         const labels: Label[] = [
             new Label("history", "This label can be only used for text that describes historical events, figures, or periods. Use this label when the content focuses mainly on a historical subject, event or era. "),
             new Label("timeline", "This label is appropriate for text that contain events that have a chronological ordering. Use this label when the content contains sequences of events where chronological order can be determined."),
-            new Label("genealogy", "This label should be used for text that describes some level of family histories, lineages, or ancestral connections. Use this label when the content focuses on tracing relationships between individuals or families across generations."),
+            new Label("genealogy", "This label should be used for text that contain ANY genealogical information. Genealogical information of interest is ANY and ONLY of the following family relationships: child, parent, sibling, spouse, grandparent, grandchild."),
         ]
 
         const classificationPrompt = `
@@ -71,6 +72,7 @@ export class SectionClassificationAgent extends GaleAgent<typeof SectionClassifi
 
         // 3. Return classification result
         return new AgentTaskResponse("completed", cid, {
+            topicId: inputData.topicId,
             topicCode: inputData.topicCode,
             sectionCode: inputData.sectionCode,
             sectionIndex: inputData.sectionIndex,
