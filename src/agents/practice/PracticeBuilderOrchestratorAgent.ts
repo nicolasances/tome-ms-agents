@@ -79,17 +79,41 @@ export class PracticeBuilderOrchestratorAgent extends GaleOrchestratorAgent<type
 
             this.logger?.compute(cid, `Resuming practice building for topic [${inputData.originalInput.topicId} - ${inputData.originalInput.topicCode}]`, "info");
 
-            // Step 2: Generate overall classification & trigger next step
+            // Step 2: Trigger Genealogy detection for sections
             if (task.command.completedSubtaskGroupId == "sections-classification-group") {
 
-                console.log(task.taskInputData);
+                const subtasks: SubTaskInfo[] = inputData.childrenOutputs.map((childOutput, index) => {
 
+                    const sectionOutput = childOutput as { topicCode: string, sectionCode: string, sectionIndex: number, labels: string[] };
+
+                    // Only trigger genealogy detection for sections labelled with 'genealogy'
+                    if (sectionOutput.labels.includes('genealogy')) {
+                        return {
+                            taskId: "topic.section.genealogy",
+                            taskInputData: {
+                                topicId: inputData.originalInput.topicId,
+                                topicCode: sectionOutput.topicCode,
+                                sectionCode: sectionOutput.sectionCode,
+                                sectionIndex: sectionOutput.sectionIndex
+                            }
+                        }
+                    }
+                }).filter(st => st !== undefined) as SubTaskInfo[];
+
+                if (subtasks.length === 0) {
+                    logger.compute(cid, `No sections labelled with 'genealogy' for topic [${inputData.originalInput.topicId}]`, "info");
+
+                    // TODO: Proceed with next steps of practice building...
+                    return new AgentTaskOrchestratorResponse("completed", cid, { done: true });
+                }
+                
+                return new AgentTaskOrchestratorResponse("subtasks", cid, undefined, subtasks, "sections-genealogy-group")
 
             }
 
         }
 
-        return new AgentTaskOrchestratorResponse("completed", task.correlationId!, { done: true });
+        return new AgentTaskOrchestratorResponse("completed", cid, { done: true });
 
     }
 }
