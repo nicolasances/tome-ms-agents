@@ -15,10 +15,17 @@ export class TopicGenealogyAgent extends GaleAgent<typeof TopicGenealogyAgent.in
 
     static responseSchema = z.array(z.array(z.string())).describe("List of genealogical information detected in the section content. Each genealogy is represented as an array of 3 strings, where the first string is the subject, the second string the relationship and the third string the object. E.g. ['Jack, 'son', 'John']");
 
+    static genealogicTrees = z.array(
+        z.object({
+            treeName: z.string().describe("Name of the genealogical tree (e.g. the family name or a prominent figure in the tree)."),
+            genealogies: TopicGenealogyAgent.responseSchema
+        })
+    ).describe("List of genealogical trees representing the consolidated genealogical information for the topic.");
+
     static outputSchema = z.object({
         topicId: z.string().describe("Unique identifier (database ID) of the Tome Topic."),
         topicCode: z.string().describe("Unique code of the Tome Topic."),
-        genealogicTrees: TopicGenealogyAgent.responseSchema.describe("List of genealogical trees representing the consolidated genealogical information for the topic."),
+        genealogicTrees: TopicGenealogyAgent.genealogicTrees.describe("Consolidated genealogical trees for the topic."),
     });
 
     manifest: GaleAgentManifest = {
@@ -54,19 +61,18 @@ export class TopicGenealogyAgent extends GaleAgent<typeof TopicGenealogyAgent.in
             2. A list of people mentioned in the sections with a description of who they are.
 
             Your task is to consolidate this information into one or more comprehensive genealogical trees.
-            The output will be a list of genealogic trees, where each tree is represented as a list of triples (subject, relationship, object). 
-            Two different trees should not share the same person, otherwise the trees should be merged into one.
-
-            ALLOWED family connections are ONLY: child, parent, sibling, spouse, grandparent, grandchild.
-            DISCARD any information that does not fit into these relationships. DO NOT add relationship types that are not in the allowed list.
-
-            Make sure to avoid duplicates and symmetric entries (e.g., if you have (Alice, parent, Bob), do not include (Bob, child, Alice)).
+            - The output will be a list of genealogic trees, where each tree is represented as a list of triples (subject, relationship, object). 
+            - Two different trees should not share the same person, otherwise the trees should be merged into one.
+            - ALLOWED family connections are ONLY: child, parent, sibling, spouse, grandparent, grandchild.
+            - DISCARD any information that does not fit into these relationships. DO NOT add relationship types that are not in the allowed list.
+            - Review all the names of subjects and objects and make sure to be consistent with the naming (e.g., if "Alexander the Great" and "Alexander" refer to the same person, use only one of the two names consistently across all triples).
+            - Make sure to avoid duplicates and symmetric entries (e.g., if you have (Alice, parent, Bob), do not include (Bob, child, Alice)).
 
             Content:
             ${JSON.stringify(data, null, 2)}
         `
 
-        const response = await ai.generate({ prompt: prompt, output: { schema: TopicGenealogyAgent.responseSchema } });
+        const response = await ai.generate({ prompt: prompt, output: { schema: TopicGenealogyAgent.genealogicTrees } });
 
         // 3. Return classification result
         return new AgentTaskResponse("completed", cid, {
