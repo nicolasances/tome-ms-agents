@@ -3,7 +3,7 @@ import { ControllerConfig } from "./Config";
 import { Gale } from "./gale/Gale";
 import { OnTopicEventHandler } from "./evt/OnTopicEvent";
 import { DevQImpl } from "./DevQImpl";
-import { PracticeBuilderOrchestratorAgent } from "./agents/practice/PracticeBuilderOrchestratorAgent";
+import { PracticeBuilderOrchestratorAgent } from "./agents/practice/orchestrator/PracticeBuilderOrchestratorAgent";
 import { SectionClassificationAgent } from "./agents/practice/SectionClassificationAgent";
 import { SectionGenealogyAgent } from "./agents/practice/SectionGenealogyAgent";
 import { TopicGenealogyAgent } from "./agents/practice/TopicGenealogyAgent";

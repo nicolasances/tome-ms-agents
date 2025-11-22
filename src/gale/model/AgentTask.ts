@@ -62,21 +62,20 @@ export class AgentTaskOrchestratorResponse<T extends z.ZodTypeAny> {
     stopReason: StopReason;
     taskOutput?: z.infer<T>;
     subtasks?: SubTaskInfo[];
-    subtasksGroupId?: string;
 
-    constructor(stopReason: StopReason, correlationId: string, taskOutput?: z.infer<T>, subtasks?: SubTaskInfo[], subtasksGroupId?: string) {
+    constructor(stopReason: StopReason, correlationId: string, taskOutput?: z.infer<T>, subtasks?: SubTaskInfo[]) {
         this.stopReason = stopReason;
         this.taskOutput = taskOutput;
         this.subtasks = subtasks;
         this.correlationId = correlationId;
-        this.subtasksGroupId = subtasksGroupId;
     }
 
 }
 
 export interface SubTaskInfo {
     taskId: TaskId;             // Unique identifier of the subtask to be executed.
-    taskInputData?: any;  // Input data needed for the subtask execution.
+    subtasksGroupId: string;    // Unique Group ID to group related subtasks together.
+    taskInputData?: any;        // Input data needed for the subtask execution.
 }
 
 export type StopReason = "completed" | "failed" | "subtasks";

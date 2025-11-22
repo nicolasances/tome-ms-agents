@@ -1,8 +1,9 @@
 import { z } from "genkit";
-import { TomeTopicsAPI } from "../../api/TomeTopicsAPI";
-import { API_DEPENDENCIES } from "../../Config";
-import { GaleOrchestratorAgent, GaleOrchestratorAgentManifest } from "../../gale/GaleAgent";
-import { AgentTaskRequest, AgentTaskOrchestratorResponse, SubTaskInfo } from "../../gale/model/AgentTask";
+import { TomeTopicsAPI } from "../../../api/TomeTopicsAPI";
+import { API_DEPENDENCIES } from "../../../Config";
+import { GaleOrchestratorAgent, GaleOrchestratorAgentManifest } from "../../../gale/GaleAgent";
+import { AgentTaskRequest, AgentTaskOrchestratorResponse, SubTaskInfo } from "../../../gale/model/AgentTask";
+import { OnSectionsClassificationGroupDone } from "./steps/OnSectionsClassificationGroupDone";
 
 /**
  * This agent is the ORCHESTRATOR for building practices for a give Tome Topic.
@@ -59,19 +60,20 @@ export class PracticeBuilderOrchestratorAgent extends GaleOrchestratorAgent<type
             }
 
             // 1.2. For each section, create a subtask to classify the section
-            const subtasks: SubTaskInfo[] = topic.sections.map((section, index) => {
+            const subtasks: SubTaskInfo[] = topic.sections.map((sectionCode, index) => {
                 return {
                     taskId: "topic.section.classify",
+                    subtasksGroupId: "sections-classification-group",
                     taskInputData: {
                         topicId: topic.id,
                         topicCode: topic.topicCode,
-                        sectionCode: section,
+                        sectionCode: sectionCode,
                         sectionIndex: index
                     }
                 }
             });
 
-            return new AgentTaskOrchestratorResponse("subtasks", task.correlationId!, undefined, subtasks, "sections-classification-group")
+            return new AgentTaskOrchestratorResponse("subtasks", task.correlationId!, undefined, subtasks)
         }
         else if (task.command.command == 'resume') {
 
@@ -82,33 +84,7 @@ export class PracticeBuilderOrchestratorAgent extends GaleOrchestratorAgent<type
             // Step 2: Trigger Genealogy detection for sections
             if (task.command.completedSubtaskGroupId == "sections-classification-group") {
 
-                const subtasks: SubTaskInfo[] = inputData.childrenOutputs.map((childOutput, index) => {
-
-                    const sectionOutput = childOutput as { topicCode: string, sectionCode: string, sectionIndex: number, labels: string[] };
-
-                    // Only trigger genealogy detection for sections labelled with 'genealogy'
-                    if (sectionOutput.labels.includes('genealogy')) {
-                        return {
-                            taskId: "topic.section.genealogy",
-                            taskInputData: {
-                                topicId: inputData.originalInput.topicId,
-                                topicCode: sectionOutput.topicCode,
-                                sectionCode: sectionOutput.sectionCode,
-                                sectionIndex: sectionOutput.sectionIndex
-                            }
-                        }
-                    }
-                }).filter(st => st !== undefined) as SubTaskInfo[];
-
-                if (subtasks.length === 0) {
-                    logger.compute(cid, `No sections labelled with 'genealogy' for topic [${inputData.originalInput.topicId}]`, "info");
-
-                    // TODO: Proceed with next steps of practice building...
-                    return new AgentTaskOrchestratorResponse("completed", cid, { done: true });
-                }
-                
-                return new AgentTaskOrchestratorResponse("subtasks", cid, undefined, subtasks, "sections-genealogy-group")
-
+                return await new OnSectionsClassificationGroupDone(cid, logger).do(inputData);
             }
             else if (task.command.completedSubtaskGroupId == "sections-genealogy-group") {
 
@@ -116,6 +92,7 @@ export class PracticeBuilderOrchestratorAgent extends GaleOrchestratorAgent<type
 
                 const subtasks: SubTaskInfo[] = [{
                     taskId: "topic.genealogy",
+                    subtasksGroupId: "topic-genealogy-group",
                     taskInputData: {
                         topicId: inputData.originalInput.topicId,
                         topicCode: inputData.originalInput.topicCode,
@@ -123,7 +100,7 @@ export class PracticeBuilderOrchestratorAgent extends GaleOrchestratorAgent<type
                     }
                 }]
 
-                return new AgentTaskOrchestratorResponse("subtasks", cid, undefined, subtasks, "topic-genealogy-group")
+                return new AgentTaskOrchestratorResponse("subtasks", cid, undefined, subtasks)
             }
 
         }
