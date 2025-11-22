@@ -30,7 +30,7 @@ export class OnSectionsClassificationGroupDone {
                 })
             }
 
-            if (!sectionOutput.labels.includes('timeline')) {
+            if (sectionOutput.labels.includes('timeline')) {
 
                 subtasks.push({
                     taskId: "topic.section.timeline",

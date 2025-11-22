@@ -56,8 +56,9 @@ export class SectionGenealogyAgent extends GaleAgent<typeof SectionGenealogyAgen
         const prompt = `
             You are an Agent specialized in extracting genealogical information from historical texts.
 
-            Given the following content, identify and extract genealogical relationships in the form of triples: (subject, relationship, object).
-            The subject and object are names of individuals, and the relationship describes their familial connection (e.g., parent, child, sibling, spouse).
+            Given the following content, identify and extract the following: 
+             - genealogical relationships in the form of triples: (subject, relationship, object). The subject and object are names of individuals, and the relationship describes their familial connection (e.g., parent, child, sibling, spouse).
+             - list of people mentioned in the content along with a brief description of who they are to help identify them in history univoquely.
 
             Rules: 
             - Relationships MUST BE EXPLICITLY stated in the content. DO NOT infer relationships that are not clearly mentioned.
