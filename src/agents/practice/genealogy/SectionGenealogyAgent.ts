@@ -1,8 +1,8 @@
 import { genkit, z } from "genkit";
 import { anthropicClaude37SonnetV1, awsBedrock } from "genkitx-aws-bedrock";
-import { GaleAgent, GaleAgentManifest } from "../../gale/GaleAgent";
-import { AgentTaskRequest, AgentTaskResponse } from "../../gale/model/AgentTask";
-import { TomeKnowledgeBase } from "../../tomekb/TomeKnowledgeBase";
+import { GaleAgent, GaleAgentManifest } from "../../../gale/GaleAgent";
+import { AgentTaskRequest, AgentTaskResponse } from "../../../gale/model/AgentTask";
+import { TomeKnowledgeBase } from "../../../tomekb/TomeKnowledgeBase";
 
 
 export class SectionGenealogyAgent extends GaleAgent<typeof SectionGenealogyAgent.inputSchema, typeof SectionGenealogyAgent.outputSchema> {
@@ -62,9 +62,10 @@ export class SectionGenealogyAgent extends GaleAgent<typeof SectionGenealogyAgen
 
             Rules: 
             - Relationships MUST BE EXPLICITLY stated in the content. DO NOT infer relationships that are not clearly mentioned.
-            - ALLOWED family connections are ONLY: child, parent, sibling, spouse, grandparent, grandchild.
+            - ALLOWED family connections are ONLY: **child, parent, sibling, spouse**.
             - DISCARD any information that does not fit into these relationships. DO NOT add relationship types that are not in the allowed list.
             - DISCARD any relationship where either the subject or the object is not a person's name. Subjects and objects MUST be a person's name (first name, last name, or full name).
+            - DISCARD any person in the list of people that is does not have an explicit name (first name, last name, or full name).
             - Make sure to avoid duplicates and symmetric entries (e.g., if you have (Alice, parent, Bob), do not include (Bob, child, Alice)).
 
             Content:

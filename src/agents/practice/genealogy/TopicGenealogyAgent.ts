@@ -1,17 +1,13 @@
 import { genkit, z } from "genkit";
 import { anthropicClaude37SonnetV1, awsBedrock } from "genkitx-aws-bedrock";
-import { GaleAgent, GaleAgentManifest } from "../../gale/GaleAgent";
-import { AgentTaskRequest, AgentTaskResponse } from "../../gale/model/AgentTask";
-import { SectionGenealogyAgent } from "./SectionGenealogyAgent";
+import { GaleAgent, GaleAgentManifest } from "../../../gale/GaleAgent";
+import { AgentTaskRequest, AgentTaskResponse } from "../../../gale/model/AgentTask";
+import { GenealogyCleanupAgent } from "./GenealogyCleanupAgent";
 
 
 export class TopicGenealogyAgent extends GaleAgent<typeof TopicGenealogyAgent.inputSchema, typeof TopicGenealogyAgent.outputSchema> {
 
-    static inputSchema = z.object({
-        topicId: z.string().describe("Unique identifier (database ID) of the Tome Topic to build practice for."),
-        topicCode: z.string().describe("Unique code of the Tome Topic to build practice for. E.g. the-merovingians"),
-        sectionsData: z.array(SectionGenealogyAgent.responseSchema).describe("List of section genealogy information detected in the topic."),
-    });
+    static inputSchema = GenealogyCleanupAgent.outputSchema;
 
     static responseSchema = z.array(z.array(z.string())).describe("List of genealogical information detected in the section content. Each genealogy is represented as an array of 3 strings, where the first string is the subject, the second string the relationship and the third string the object. E.g. ['Jack, 'son', 'John']");
 
@@ -51,7 +47,7 @@ export class TopicGenealogyAgent extends GaleAgent<typeof TopicGenealogyAgent.in
 
         logger.compute(cid, `Consolidating genealogy for topic [${inputData.topicId} - ${inputData.topicCode}]`, "info");
 
-        const data = task.taskInputData!.sectionsData;
+        const data = task.taskInputData!.cleanedupInfo;
 
         const prompt = `
             You are an Agent specialized in consolidating genealogical information from historical texts.

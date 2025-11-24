@@ -4,6 +4,8 @@ import { API_DEPENDENCIES } from "../../../Config";
 import { GaleOrchestratorAgent, GaleOrchestratorAgentManifest } from "../../../gale/GaleAgent";
 import { AgentTaskRequest, AgentTaskOrchestratorResponse, SubTaskInfo } from "../../../gale/model/AgentTask";
 import { OnSectionsClassificationGroupDone } from "./steps/OnSectionsClassificationGroupDone";
+import { OnSectionGenealogyGroupDone } from "./steps/OnSectionGenealogyGroupDone";
+import { OnGenealogyCleanupDone } from "./steps/OnGenealogyCleanupDone";
 
 /**
  * This agent is the ORCHESTRATOR for building practices for a give Tome Topic.
@@ -83,24 +85,14 @@ export class PracticeBuilderOrchestratorAgent extends GaleOrchestratorAgent<type
 
             // Step 2: Trigger Genealogy detection for sections
             if (task.command.completedSubtaskGroupId == "sections-classification-group") {
-
                 return await new OnSectionsClassificationGroupDone(cid, logger).do(inputData);
             }
             else if (task.command.completedSubtaskGroupId == "sections-genealogy-group") {
-
-                logger.compute(cid, `Consolidating genealogy information for topic [${inputData.originalInput.topicId}]`, "info");
-
-                const subtasks: SubTaskInfo[] = [{
-                    taskId: "topic.genealogy",
-                    subtasksGroupId: "topic-genealogy-group",
-                    taskInputData: {
-                        topicId: inputData.originalInput.topicId,
-                        topicCode: inputData.originalInput.topicCode,
-                        sectionsData: inputData.childrenOutputs.map(child => child.info)
-                    }
-                }]
-
-                return new AgentTaskOrchestratorResponse("subtasks", cid, undefined, subtasks)
+                return await new OnSectionGenealogyGroupDone(cid, logger).do(inputData);
+            }
+            else if (task.command.completedSubtaskGroupId == "topic-genealogy-prep") {
+                // return await new OnGenealogyCleanupDone(cid, logger).do(inputData);
+                return new AgentTaskOrchestratorResponse("completed", cid, { done: true });
             }
 
         }

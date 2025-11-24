@@ -5,9 +5,10 @@ import { OnTopicEventHandler } from "./evt/OnTopicEvent";
 import { DevQImpl } from "./DevQImpl";
 import { PracticeBuilderOrchestratorAgent } from "./agents/practice/orchestrator/PracticeBuilderOrchestratorAgent";
 import { SectionClassificationAgent } from "./agents/practice/SectionClassificationAgent";
-import { SectionGenealogyAgent } from "./agents/practice/SectionGenealogyAgent";
-import { TopicGenealogyAgent } from "./agents/practice/TopicGenealogyAgent";
+import { SectionGenealogyAgent } from "./agents/practice/genealogy/SectionGenealogyAgent";
+import { TopicGenealogyAgent } from "./agents/practice/genealogy/TopicGenealogyAgent";
 import { SectionTimelineAgent } from "./agents/practice/SectionTimelineAgent";
+import { GenealogyCleanupAgent } from "./agents/practice/genealogy/GenealogyCleanupAgent";
 
 const galeBrokerURL = `${String(process.env.GALE_BROKER_URL)}`;
 
@@ -27,6 +28,7 @@ const gale = new Gale(
 gale.registerAgent(new PracticeBuilderOrchestratorAgent());
 gale.registerAgent(new SectionClassificationAgent());
 gale.registerAgent(new SectionGenealogyAgent());
+gale.registerAgent(new GenealogyCleanupAgent());
 gale.registerAgent(new TopicGenealogyAgent());
 gale.registerAgent(new SectionTimelineAgent());
 
