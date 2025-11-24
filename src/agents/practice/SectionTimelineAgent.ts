@@ -58,11 +58,15 @@ export class SectionTimelineAgent extends GaleAgent<typeof SectionTimelineAgent.
         const sectionContent = await new TomeKnowledgeBase(this.config!).getSectionContent(inputData.topicCode, inputData.sectionCode, inputData.sectionIndex);
 
         const prompt = `
-            You are an Agent specialized in extracting historical events out of historical text, and organizing them into a timeline.
+            You are an Agent specialized in understanding historical text and sorting events in chronological order. 
 
-            Given the following content, identify and extract timeline events with dates and descriptions. Events are historical occurrences (facts) that can be placed on a timeline. 
+            You are provided the content of a section from a historical topic. 
+            
+            Your task: 
+            Read through the content and identify all events that can be placed in chronological order, either based on explicit dates mentioned or inferred from the context.
 
             Rules TO FOLLOW: 
+            - Not all events need to have dates. 
             - DO NOT INVENT DATES. ONLY EXTRACT DATES THAT ARE PRESENT IN THE TEXT.
             - If a date is partially specified (e.g., only year or year and month), extract only the available components.
             - Ensure the description provides context about the event associated with the date.
