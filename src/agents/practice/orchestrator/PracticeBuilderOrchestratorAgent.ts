@@ -4,8 +4,9 @@ import { API_DEPENDENCIES } from "../../../Config";
 import { GaleOrchestratorAgent, GaleOrchestratorAgentManifest } from "../../../gale/GaleAgent";
 import { AgentTaskRequest, AgentTaskOrchestratorResponse, SubTaskInfo } from "../../../gale/model/AgentTask";
 import { OnSectionsClassificationGroupDone } from "./steps/OnSectionsClassificationGroupDone";
-import { OnSectionGenealogyGroupDone } from "./steps/OnSectionGenealogyGroupDone";
-import { OnGenealogyCleanupDone } from "./steps/OnGenealogyCleanupDone";
+import { SectionGenealogyAgent } from "../genealogy/SectionGenealogyAgent";
+import { GenealogicTreeGeneration } from "./actions/GenealogicTreeGeneration";
+import { PersonalitiesConsoliation } from "./actions/PersonalitiesConsoliation";
 
 /**
  * This agent is the ORCHESTRATOR for building practices for a give Tome Topic.
@@ -83,12 +84,29 @@ export class PracticeBuilderOrchestratorAgent extends GaleOrchestratorAgent<type
 
             this.logger?.compute(cid, `Resuming practice building for topic [${inputData.originalInput.topicId} - ${inputData.originalInput.topicCode}]`, "info");
 
-            // Step 2: Trigger Genealogy detection for sections
             if (task.command.completedSubtaskGroupId == "sections-classification-group") {
                 return await new OnSectionsClassificationGroupDone(cid, logger).do(inputData);
             }
             else if (task.command.completedSubtaskGroupId == "sections-genealogy-group") {
-                return await new OnSectionGenealogyGroupDone(cid, logger).do(inputData);
+
+                const sectionGenealogyOutput = inputData.childrenOutputs as z.infer<typeof SectionGenealogyAgent.outputSchema>[];
+
+                // Cast input data
+                const relationships = sectionGenealogyOutput.flatMap(childOutput => childOutput.info.genealogies);
+                const personalities = sectionGenealogyOutput.flatMap(childOutput => childOutput.info.people);
+
+                const subtaskGroupId = "genealogy-personalities-group";
+
+                // 1. Trigger genealogic tree generation
+                const subtasks1 = new GenealogicTreeGeneration().createSubtasks(subtaskGroupId, inputData.originalInput.topicId, inputData.originalInput.topicCode, relationships, personalities);
+
+                // 2. Trigger personalities generation
+                const subtasks2 = new PersonalitiesConsoliation().createSubtasks(subtaskGroupId, inputData.originalInput.topicId, inputData.originalInput.topicCode, personalities);
+
+                // Merge subtasks
+                const subtasks = [...subtasks1, ...subtasks2];
+
+                return new AgentTaskOrchestratorResponse("subtasks", cid, undefined, subtasks);
             }
             else if (task.command.completedSubtaskGroupId == "topic-genealogy-prep") {
                 // return await new OnGenealogyCleanupDone(cid, logger).do(inputData);

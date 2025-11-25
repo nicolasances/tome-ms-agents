@@ -3,6 +3,8 @@ import { anthropicClaude37SonnetV1, awsBedrock } from "genkitx-aws-bedrock";
 import { GaleAgent, GaleAgentManifest } from "../../../gale/GaleAgent";
 import { AgentTaskRequest, AgentTaskResponse } from "../../../gale/model/AgentTask";
 import { TomeKnowledgeBase } from "../../../tomekb/TomeKnowledgeBase";
+import { RelationshipSchema } from "../../model/GenealogicTreeSchema";
+import { PersonalitySchema } from "../../model/PersonalitiesSchema";
 
 
 export class SectionGenealogyAgent extends GaleAgent<typeof SectionGenealogyAgent.inputSchema, typeof SectionGenealogyAgent.outputSchema> {
@@ -15,8 +17,8 @@ export class SectionGenealogyAgent extends GaleAgent<typeof SectionGenealogyAgen
     });
 
     static responseSchema = z.object({
-        genealogies: z.array(z.array(z.string())).describe("List of genealogical information detected in the section content. Each genealogy is represented as an array of 3 strings, where the first string is the subject, the second string the relationship and the third string the object. E.g. ['Jack, 'son', 'John']"),
-        people: z.array(z.array(z.string())).describe("List of people mentioned in the section content with a description of who they are. The array contains arrays of 2 strings, where the first string is the name of the person and the second string is an description of the person that can be used to univoquely identify it in history. E.g. ['Pippin', 'Pippin the Short, King of the Franks from 751 to 768']"),
+        genealogies: z.array(RelationshipSchema).describe("List of genealogical information detected in the section content. "),
+        people: z.array(PersonalitySchema).describe("List of people mentioned in the section content with a description of who they are. The array contains arrays of 2 strings, where the first string is the name of the person and the second string is an description of the person that can be used to univoquely identify it in history. E.g. ['Pippin', 'Pippin the Short, King of the Franks from 751 to 768']"),
     });
 
     static outputSchema = z.object({

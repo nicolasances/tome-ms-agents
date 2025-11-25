@@ -4,7 +4,7 @@
   "description": "Tome Agents Microservice",
   "main": "index.js",
   "scripts": {
-    "start:dev": "npx nodemon",
+    "dev": "npx nodemon",
     "build": "tsc",
     "start": "node build/index.js"
   },
