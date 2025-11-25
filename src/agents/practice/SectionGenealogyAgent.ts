@@ -9,6 +9,8 @@ import { PersonalitySchema } from "../../model/PersonalitiesSchema";
 
 export class SectionGenealogyAgent extends GaleAgent<typeof SectionGenealogyAgent.inputSchema, typeof SectionGenealogyAgent.outputSchema> {
 
+    static taskId: string = "topic.section.genealogy";
+
     static inputSchema = z.object({
         topicId: z.string().describe("Unique identifier (database ID) of the Tome Topic to build practice for."),
         topicCode: z.string().describe("Unique code of the Tome Topic to build practice for. E.g. the-merovingians"),
@@ -31,7 +33,7 @@ export class SectionGenealogyAgent extends GaleAgent<typeof SectionGenealogyAgen
 
     manifest: GaleAgentManifest = {
         agentName: "Tome Section Genealogy Detector",
-        taskId: "topic.section.genealogy",
+        taskId: SectionGenealogyAgent.taskId,
         inputSchema: SectionGenealogyAgent.inputSchema,
         outputSchema: SectionGenealogyAgent.outputSchema,
         description: "Agent for detecting genealogical information in sections of a Tome Topic. This agent analyzes the content of a section and determines if it contains genealogical details such as family relationships, lineages, or ancestry information."

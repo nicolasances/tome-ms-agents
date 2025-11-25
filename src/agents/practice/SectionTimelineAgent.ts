@@ -7,6 +7,8 @@ import { TomeKnowledgeBase } from "../../tomekb/TomeKnowledgeBase";
 
 export class SectionTimelineAgent extends GaleAgent<typeof SectionTimelineAgent.inputSchema, typeof SectionTimelineAgent.outputSchema> {
 
+    static taskId: string = "topic.section.timeline";
+
     static inputSchema = z.object({
         topicId: z.string().describe("Unique identifier (database ID) of the Tome Topic to build practice for."),
         topicCode: z.string().describe("Unique code of the Tome Topic to build practice for. E.g. the-merovingians"),
@@ -33,7 +35,7 @@ export class SectionTimelineAgent extends GaleAgent<typeof SectionTimelineAgent.
 
     manifest: GaleAgentManifest = {
         agentName: "Tome Section Timeline Extractor",
-        taskId: "topic.section.timeline",
+        taskId: SectionTimelineAgent.taskId,
         inputSchema: SectionTimelineAgent.inputSchema,
         outputSchema: SectionTimelineAgent.outputSchema,
         description: "Agent for extracting timeline information in sections of a Tome Topic. This agent analyzes the content of a section and determines if it contains timeline details such as dates and descriptions of events."

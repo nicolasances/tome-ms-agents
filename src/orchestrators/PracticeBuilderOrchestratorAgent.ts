@@ -3,10 +3,12 @@ import { TomeTopicsAPI } from "../api/TomeTopicsAPI";
 import { API_DEPENDENCIES } from "../Config";
 import { GaleOrchestratorAgent, GaleOrchestratorAgentManifest } from "../gale/GaleAgent";
 import { AgentTaskRequest, AgentTaskOrchestratorResponse, SubTaskInfo } from "../gale/model/AgentTask";
-import { OnSectionsClassificationGroupDone } from "./steps/OnSectionsClassificationGroupDone";
 import { SectionGenealogyAgent } from "../agents/practice/SectionGenealogyAgent";
 import { GenealogicTreeGeneration } from "./actions/GenealogicTreeGeneration";
 import { PersonalitiesConsoliation } from "./actions/PersonalitiesConsoliation";
+import { SectionClassificationAgent } from "../agents/practice/SectionClassificationAgent";
+import { SectionClassification, SectionGenealogicRelationshipsExtraction } from "./actions/SectionGenealogicRelationshipsExtraction";
+import { SectionTimelineRelationshipsExtraction } from "./actions/SectionTimelineRelationshipsExtraction";
 
 /**
  * This agent is the ORCHESTRATOR for building practices for a give Tome Topic.
@@ -85,7 +87,20 @@ export class PracticeBuilderOrchestratorAgent extends GaleOrchestratorAgent<type
             this.logger?.compute(cid, `Resuming practice building for topic [${inputData.originalInput.topicId} - ${inputData.originalInput.topicCode}]`, "info");
 
             if (task.command.completedSubtaskGroupId == "sections-classification-group") {
-                return await new OnSectionsClassificationGroupDone(cid, logger).do(inputData);
+
+                const sectionClassificationOutput = inputData.childrenOutputs as z.infer<typeof SectionClassificationAgent.outputSchema>[];
+
+                const sectionsClassifications: SectionClassification[] = sectionClassificationOutput.map(sc => ({ labels: sc.labels, sectionIndex: sc.sectionIndex, sectionCode: sc.sectionCode }))
+
+                // 1. Trigger Section Genealogic relationships extraction
+                const genSubtasks = new SectionGenealogicRelationshipsExtraction().createSubtasks("sections-genealogy-group", inputData.originalInput.topicId, inputData.originalInput.topicCode, sectionsClassifications);
+
+                // 2. Trigger Section Timeline extraction
+                const timelineSubtasks = new SectionTimelineRelationshipsExtraction().createSubtasks("sections-timeline-group", inputData.originalInput.topicId, inputData.originalInput.topicCode, sectionsClassifications);
+
+                const subtasks = [...genSubtasks, ...timelineSubtasks];
+
+                return new AgentTaskOrchestratorResponse("subtasks", cid, undefined, subtasks);
             }
             else if (task.command.completedSubtaskGroupId == "sections-genealogy-group") {
 

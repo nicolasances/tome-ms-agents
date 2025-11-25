@@ -1,7 +1,7 @@
 import { z } from "genkit";
 import { SubTaskInfo } from "../../gale/model/AgentTask";
+import { PersonalitiesConsolidationAgent } from "../../agents/practice/PersonalitiesConsolidationAgent";
 import { PersonalitySchema } from "../../model/PersonalitiesSchema";
-import { PersonalitiesConsolidationAgent } from "../../agents/practice/personalities/PersonalitiesConsolidationAgent";
 
 export class PersonalitiesConsoliation {
 
