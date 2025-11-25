@@ -1,10 +1,10 @@
 import { z } from "genkit";
-import { TomeTopicsAPI } from "../../../api/TomeTopicsAPI";
-import { API_DEPENDENCIES } from "../../../Config";
-import { GaleOrchestratorAgent, GaleOrchestratorAgentManifest } from "../../../gale/GaleAgent";
-import { AgentTaskRequest, AgentTaskOrchestratorResponse, SubTaskInfo } from "../../../gale/model/AgentTask";
+import { TomeTopicsAPI } from "../api/TomeTopicsAPI";
+import { API_DEPENDENCIES } from "../Config";
+import { GaleOrchestratorAgent, GaleOrchestratorAgentManifest } from "../gale/GaleAgent";
+import { AgentTaskRequest, AgentTaskOrchestratorResponse, SubTaskInfo } from "../gale/model/AgentTask";
 import { OnSectionsClassificationGroupDone } from "./steps/OnSectionsClassificationGroupDone";
-import { SectionGenealogyAgent } from "../genealogy/SectionGenealogyAgent";
+import { SectionGenealogyAgent } from "../agents/practice/SectionGenealogyAgent";
 import { GenealogicTreeGeneration } from "./actions/GenealogicTreeGeneration";
 import { PersonalitiesConsoliation } from "./actions/PersonalitiesConsoliation";
 
@@ -37,7 +37,7 @@ export class PracticeBuilderOrchestratorAgent extends GaleOrchestratorAgent<type
         inputSchema: PracticeBuilderOrchestratorAgent.inputSchema,
         outputSchema: PracticeBuilderOrchestratorAgent.outputSchema,
         resumeInputSchema: PracticeBuilderOrchestratorAgent.resumeInputSchema,
-        description: "Orchestrator agent for building practices for a given Tome Topic."
+        description: "Orchestrator Agent that builds a complete Tome Practice for a given Topic by coordinating multiple sub-agents."
     };
 
     async executeTask(task: AgentTaskRequest<typeof PracticeBuilderOrchestratorAgent.inputSchema | typeof PracticeBuilderOrchestratorAgent.resumeInputSchema>): Promise<AgentTaskOrchestratorResponse<typeof PracticeBuilderOrchestratorAgent.outputSchema>> {
@@ -107,10 +107,6 @@ export class PracticeBuilderOrchestratorAgent extends GaleOrchestratorAgent<type
                 const subtasks = [...subtasks1, ...subtasks2];
 
                 return new AgentTaskOrchestratorResponse("subtasks", cid, undefined, subtasks);
-            }
-            else if (task.command.completedSubtaskGroupId == "topic-genealogy-prep") {
-                // return await new OnGenealogyCleanupDone(cid, logger).do(inputData);
-                return new AgentTaskOrchestratorResponse("completed", cid, { done: true });
             }
 
         }

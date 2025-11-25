@@ -1,8 +1,8 @@
 import { genkit, z } from "genkit";
 import { anthropicClaude37SonnetV1, awsBedrock } from "genkitx-aws-bedrock";
-import { GaleAgent, GaleAgentManifest } from "../../../gale/GaleAgent";
-import { AgentTaskRequest, AgentTaskResponse } from "../../../gale/model/AgentTask";
+import { GaleAgent, GaleAgentManifest } from "../../gale/GaleAgent";
 import { PersonalitySchema } from "../../model/PersonalitiesSchema";
+import { AgentTaskRequest, AgentTaskResponse } from "../../gale/model/AgentTask";
 
 
 export class PersonalitiesConsolidationAgent extends GaleAgent<typeof PersonalitiesConsolidationAgent.inputSchema, typeof PersonalitiesConsolidationAgent.outputSchema> {

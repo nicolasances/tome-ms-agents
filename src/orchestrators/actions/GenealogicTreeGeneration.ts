@@ -1,8 +1,8 @@
 import { z } from "genkit";
-import { SubTaskInfo } from "../../../../gale/model/AgentTask";
-import { GenealogicTreeAgent } from "../../genealogy/GenealogicTreeAgent";
-import { RelationshipSchema } from "../../../model/GenealogicTreeSchema";
-import { PersonalitySchema } from "../../../model/PersonalitiesSchema";
+import { SubTaskInfo } from "../../gale/model/AgentTask";
+import { GenealogicTreeAgent } from "../../agents/practice/GenealogicTreeAgent";
+import { RelationshipSchema } from "../../model/GenealogicTreeSchema";
+import { PersonalitySchema } from "../../model/PersonalitiesSchema";
 
 export class GenealogicTreeGeneration {
 

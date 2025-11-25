@@ -1,8 +1,8 @@
 import { genkit, z } from "genkit";
 import { anthropicClaude37SonnetV1, awsBedrock } from "genkitx-aws-bedrock";
-import { GaleAgent, GaleAgentManifest } from "../../../gale/GaleAgent";
-import { AgentTaskRequest, AgentTaskResponse } from "../../../gale/model/AgentTask";
-import { TomeKnowledgeBase } from "../../../tomekb/TomeKnowledgeBase";
+import { GaleAgent, GaleAgentManifest } from "../../gale/GaleAgent";
+import { AgentTaskRequest, AgentTaskResponse } from "../../gale/model/AgentTask";
+import { TomeKnowledgeBase } from "../../tomekb/TomeKnowledgeBase";
 import { RelationshipSchema } from "../../model/GenealogicTreeSchema";
 import { PersonalitySchema } from "../../model/PersonalitiesSchema";
 

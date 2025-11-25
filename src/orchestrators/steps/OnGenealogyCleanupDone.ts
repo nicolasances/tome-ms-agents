@@ -1,5 +1,5 @@
 import { Logger } from "toto-api-controller";
-import { AgentTaskOrchestratorResponse, SubTaskInfo } from "../../../../gale/model/AgentTask";
+import { AgentTaskOrchestratorResponse, SubTaskInfo } from "../../gale/model/AgentTask";
 import { PracticeBuilderOrchestratorAgent } from "../PracticeBuilderOrchestratorAgent";
 
 

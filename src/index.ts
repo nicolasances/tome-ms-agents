@@ -3,14 +3,12 @@ import { ControllerConfig } from "./Config";
 import { Gale } from "./gale/Gale";
 import { OnTopicEventHandler } from "./evt/OnTopicEvent";
 import { DevQImpl } from "./DevQImpl";
-import { PracticeBuilderOrchestratorAgent } from "./agents/practice/orchestrator/PracticeBuilderOrchestratorAgent";
+import { PracticeBuilderOrchestratorAgent } from "./orchestrators/PracticeBuilderOrchestratorAgent";
 import { SectionClassificationAgent } from "./agents/practice/SectionClassificationAgent";
-import { SectionGenealogyAgent } from "./agents/practice/genealogy/SectionGenealogyAgent";
-import { TopicGenealogyAgent } from "./agents/practice/genealogy/TopicGenealogyAgent";
+import { SectionGenealogyAgent } from "./agents/practice/SectionGenealogyAgent";
 import { SectionTimelineAgent } from "./agents/practice/SectionTimelineAgent";
-import { GenealogyCleanupAgent } from "./agents/practice/genealogy/GenealogyCleanupAgent";
-import { PersonalitiesConsolidationAgent } from "./agents/practice/personalities/PersonalitiesConsolidationAgent";
-import { GenealogicTreeAgent } from "./agents/practice/genealogy/GenealogicTreeAgent";
+import { GenealogicTreeAgent } from "./agents/practice/GenealogicTreeAgent";
+import { PersonalitiesConsolidationAgent } from "./agents/practice/PersonalitiesConsolidationAgent";
 
 const galeBrokerURL = `${String(process.env.GALE_BROKER_URL)}`;
 
@@ -30,8 +28,6 @@ const gale = new Gale(
 gale.registerAgent(new PracticeBuilderOrchestratorAgent());
 gale.registerAgent(new SectionClassificationAgent());
 gale.registerAgent(new SectionGenealogyAgent());
-gale.registerAgent(new GenealogyCleanupAgent());
-gale.registerAgent(new TopicGenealogyAgent());
 gale.registerAgent(new SectionTimelineAgent());
 gale.registerAgent(new PersonalitiesConsolidationAgent());
 gale.registerAgent(new GenealogicTreeAgent());
