@@ -3,9 +3,13 @@ import { anthropicClaude37SonnetV1, awsBedrock } from "genkitx-aws-bedrock";
 import { GaleAgent, GaleAgentManifest } from "../../gale/GaleAgent";
 import { AgentTaskRequest, AgentTaskResponse } from "../../gale/model/AgentTask";
 import { TomeKnowledgeBase } from "../../tomekb/TomeKnowledgeBase";
+import { RelationshipSchema } from "../../model/GenealogicTreeSchema";
+import { PersonalitySchema } from "../../model/PersonalitiesSchema";
 
 
 export class SectionGenealogyAgent extends GaleAgent<typeof SectionGenealogyAgent.inputSchema, typeof SectionGenealogyAgent.outputSchema> {
+
+    static taskId: string = "topic.section.genealogy";
 
     static inputSchema = z.object({
         topicId: z.string().describe("Unique identifier (database ID) of the Tome Topic to build practice for."),
@@ -15,8 +19,8 @@ export class SectionGenealogyAgent extends GaleAgent<typeof SectionGenealogyAgen
     });
 
     static responseSchema = z.object({
-        genealogies: z.array(z.array(z.string())).describe("List of genealogical information detected in the section content. Each genealogy is represented as an array of 3 strings, where the first string is the subject, the second string the relationship and the third string the object. E.g. ['Jack, 'son', 'John']"),
-        people: z.array(z.array(z.string())).describe("List of people mentioned in the section content with a description of who they are. The array contains arrays of 2 strings, where the first string is the name of the person and the second string is an description of the person that can be used to univoquely identify it in history. E.g. ['Pippin', 'Pippin the Short, King of the Franks from 751 to 768']"),
+        genealogies: z.array(RelationshipSchema).describe("List of genealogical information detected in the section content. "),
+        people: z.array(PersonalitySchema).describe("List of people mentioned in the section content with a description of who they are. The array contains arrays of 2 strings, where the first string is the name of the person and the second string is an description of the person that can be used to univoquely identify it in history. E.g. ['Pippin', 'Pippin the Short, King of the Franks from 751 to 768']"),
     });
 
     static outputSchema = z.object({
@@ -29,7 +33,7 @@ export class SectionGenealogyAgent extends GaleAgent<typeof SectionGenealogyAgen
 
     manifest: GaleAgentManifest = {
         agentName: "Tome Section Genealogy Detector",
-        taskId: "topic.section.genealogy",
+        taskId: SectionGenealogyAgent.taskId,
         inputSchema: SectionGenealogyAgent.inputSchema,
         outputSchema: SectionGenealogyAgent.outputSchema,
         description: "Agent for detecting genealogical information in sections of a Tome Topic. This agent analyzes the content of a section and determines if it contains genealogical details such as family relationships, lineages, or ancestry information."
@@ -62,9 +66,10 @@ export class SectionGenealogyAgent extends GaleAgent<typeof SectionGenealogyAgen
 
             Rules: 
             - Relationships MUST BE EXPLICITLY stated in the content. DO NOT infer relationships that are not clearly mentioned.
-            - ALLOWED family connections are ONLY: child, parent, sibling, spouse, grandparent, grandchild.
+            - ALLOWED family connections are ONLY: **child, parent, sibling, spouse**.
             - DISCARD any information that does not fit into these relationships. DO NOT add relationship types that are not in the allowed list.
             - DISCARD any relationship where either the subject or the object is not a person's name. Subjects and objects MUST be a person's name (first name, last name, or full name).
+            - DISCARD any person in the list of people that is does not have an explicit name (first name, last name, or full name).
             - Make sure to avoid duplicates and symmetric entries (e.g., if you have (Alice, parent, Bob), do not include (Bob, child, Alice)).
 
             Content:

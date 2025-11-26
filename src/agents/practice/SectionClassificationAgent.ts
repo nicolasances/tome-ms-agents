@@ -3,6 +3,7 @@ import { AgentTaskRequest, AgentTaskResponse } from "../../gale/model/AgentTask"
 import { genkit, z } from 'genkit';
 import { awsBedrock, anthropicClaude37SonnetV1 } from "genkitx-aws-bedrock";
 import { TomeKnowledgeBase } from "../../tomekb/TomeKnowledgeBase";
+import { LabelSchema } from "../../model/LabelSchema";
 
 export class SectionClassificationAgent extends GaleAgent<typeof SectionClassificationAgent.inputSchema, typeof SectionClassificationAgent.outputSchema> {
 
@@ -18,7 +19,7 @@ export class SectionClassificationAgent extends GaleAgent<typeof SectionClassifi
         topicCode: z.string().describe("Unique code of the Tome Topic."),
         sectionCode: z.string().describe("Code of the section that was classified."),
         sectionIndex: z.number().describe("Index of the section within the topic."),
-        labels: z.array(z.string()).describe("List of labels assigned to the section content."),
+        labels: z.array(LabelSchema).describe("List of labels assigned to the section content."),
     });
 
     manifest: GaleAgentManifest = {

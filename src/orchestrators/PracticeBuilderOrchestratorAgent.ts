@@ -1,9 +1,14 @@
 import { z } from "genkit";
-import { TomeTopicsAPI } from "../../../api/TomeTopicsAPI";
-import { API_DEPENDENCIES } from "../../../Config";
-import { GaleOrchestratorAgent, GaleOrchestratorAgentManifest } from "../../../gale/GaleAgent";
-import { AgentTaskRequest, AgentTaskOrchestratorResponse, SubTaskInfo } from "../../../gale/model/AgentTask";
-import { OnSectionsClassificationGroupDone } from "./steps/OnSectionsClassificationGroupDone";
+import { TomeTopicsAPI } from "../api/TomeTopicsAPI";
+import { API_DEPENDENCIES } from "../Config";
+import { GaleOrchestratorAgent, GaleOrchestratorAgentManifest } from "../gale/GaleAgent";
+import { AgentTaskRequest, AgentTaskOrchestratorResponse, SubTaskInfo } from "../gale/model/AgentTask";
+import { SectionGenealogyAgent } from "../agents/practice/SectionGenealogyAgent";
+import { GenealogicTreeGeneration } from "./actions/GenealogicTreeGeneration";
+import { PersonalitiesConsoliation } from "./actions/PersonalitiesConsoliation";
+import { SectionClassificationAgent } from "../agents/practice/SectionClassificationAgent";
+import { SectionClassification, SectionGenealogicRelationshipsExtraction } from "./actions/SectionGenealogicRelationshipsExtraction";
+import { SectionTimelineRelationshipsExtraction } from "./actions/SectionTimelineRelationshipsExtraction";
 
 /**
  * This agent is the ORCHESTRATOR for building practices for a give Tome Topic.
@@ -34,7 +39,7 @@ export class PracticeBuilderOrchestratorAgent extends GaleOrchestratorAgent<type
         inputSchema: PracticeBuilderOrchestratorAgent.inputSchema,
         outputSchema: PracticeBuilderOrchestratorAgent.outputSchema,
         resumeInputSchema: PracticeBuilderOrchestratorAgent.resumeInputSchema,
-        description: "Orchestrator agent for building practices for a given Tome Topic."
+        description: "Orchestrator Agent that builds a complete Tome Practice for a given Topic by coordinating multiple sub-agents."
     };
 
     async executeTask(task: AgentTaskRequest<typeof PracticeBuilderOrchestratorAgent.inputSchema | typeof PracticeBuilderOrchestratorAgent.resumeInputSchema>): Promise<AgentTaskOrchestratorResponse<typeof PracticeBuilderOrchestratorAgent.outputSchema>> {
@@ -81,26 +86,42 @@ export class PracticeBuilderOrchestratorAgent extends GaleOrchestratorAgent<type
 
             this.logger?.compute(cid, `Resuming practice building for topic [${inputData.originalInput.topicId} - ${inputData.originalInput.topicCode}]`, "info");
 
-            // Step 2: Trigger Genealogy detection for sections
             if (task.command.completedSubtaskGroupId == "sections-classification-group") {
 
-                return await new OnSectionsClassificationGroupDone(cid, logger).do(inputData);
+                const sectionClassificationOutput = inputData.childrenOutputs as z.infer<typeof SectionClassificationAgent.outputSchema>[];
+
+                const sectionsClassifications: SectionClassification[] = sectionClassificationOutput.map(sc => ({ labels: sc.labels, sectionIndex: sc.sectionIndex, sectionCode: sc.sectionCode }))
+
+                // 1. Trigger Section Genealogic relationships extraction
+                const genSubtasks = new SectionGenealogicRelationshipsExtraction().createSubtasks("sections-genealogy-group", inputData.originalInput.topicId, inputData.originalInput.topicCode, sectionsClassifications);
+
+                // 2. Trigger Section Timeline extraction
+                const timelineSubtasks = new SectionTimelineRelationshipsExtraction().createSubtasks("sections-timeline-group", inputData.originalInput.topicId, inputData.originalInput.topicCode, sectionsClassifications);
+
+                const subtasks = [...genSubtasks, ...timelineSubtasks];
+
+                return new AgentTaskOrchestratorResponse("subtasks", cid, undefined, subtasks);
             }
             else if (task.command.completedSubtaskGroupId == "sections-genealogy-group") {
 
-                logger.compute(cid, `Consolidating genealogy information for topic [${inputData.originalInput.topicId}]`, "info");
+                const sectionGenealogyOutput = inputData.childrenOutputs as z.infer<typeof SectionGenealogyAgent.outputSchema>[];
 
-                const subtasks: SubTaskInfo[] = [{
-                    taskId: "topic.genealogy",
-                    subtasksGroupId: "topic-genealogy-group",
-                    taskInputData: {
-                        topicId: inputData.originalInput.topicId,
-                        topicCode: inputData.originalInput.topicCode,
-                        sectionsData: inputData.childrenOutputs.map(child => child.info)
-                    }
-                }]
+                // Cast input data
+                const relationships = sectionGenealogyOutput.flatMap(childOutput => childOutput.info.genealogies);
+                const personalities = sectionGenealogyOutput.flatMap(childOutput => childOutput.info.people);
 
-                return new AgentTaskOrchestratorResponse("subtasks", cid, undefined, subtasks)
+                const subtaskGroupId = "genealogy-personalities-group";
+
+                // 1. Trigger genealogic tree generation
+                const subtasks1 = new GenealogicTreeGeneration().createSubtasks(subtaskGroupId, inputData.originalInput.topicId, inputData.originalInput.topicCode, relationships, personalities);
+
+                // 2. Trigger personalities generation
+                const subtasks2 = new PersonalitiesConsoliation().createSubtasks(subtaskGroupId, inputData.originalInput.topicId, inputData.originalInput.topicCode, personalities);
+
+                // Merge subtasks
+                const subtasks = [...subtasks1, ...subtasks2];
+
+                return new AgentTaskOrchestratorResponse("subtasks", cid, undefined, subtasks);
             }
 
         }
