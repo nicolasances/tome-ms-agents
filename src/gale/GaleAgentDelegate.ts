@@ -18,6 +18,7 @@ export class GaleAgentTaskDelegate implements TotoDelegate {
 
         this.agent.logger = logger;
         this.agent.config = execContext.config;
+        this.agent.execContext = execContext;
 
         const agentTaskRequest = new AgentTaskRequest<any>({
             command: req.body.command,
