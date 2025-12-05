@@ -6,7 +6,7 @@ import { SectionTimelineAgent } from "../agents/practice/SectionTimelineAgent";
 import { AgenticFlow, AgentNode, BranchNode, GroupNode } from "../gale/model/AgenticFlow";
 import { GenealogicTreeAgent } from "../agents/practice/GenealogicTreeAgent";
 import { PersonalitiesConsolidationAgent } from "../agents/practice/PersonalitiesConsolidationAgent";
-import { classificationAgents, sectionGenealogyAgents } from "./providers/PracticeBuildAgentsProvider";
+import { classificationAgents, sectionGenealogyAgents, sectionTimelineAgents } from "./providers/PracticeBuildAgentsProvider";
 
 /**
  * This agent is the ORCHESTRATOR for building practices for a give Tome Topic.
@@ -75,8 +75,9 @@ export class PracticeBuilderOrchestratorAgent extends GaleOrchestratorAgent<type
                     },
                     {
                         branchId: "sections-timeline-branch",
-                        branch: new AgentNode({
-                            taskId: SectionTimelineAgent.taskId
+                        branch: new GroupNode({
+                            groupId: "sections-timeline-group",
+                            agentsProvider: sectionTimelineAgents, 
                         })
                     }
                 ]
@@ -87,9 +88,10 @@ export class PracticeBuilderOrchestratorAgent extends GaleOrchestratorAgent<type
     async executeTask(task: AgentTaskRequest<typeof PracticeBuilderOrchestratorAgent.inputSchema | typeof PracticeBuilderOrchestratorAgent.resumeInputSchema>): Promise<AgentTaskOrchestratorResponse<typeof PracticeBuilderOrchestratorAgent.outputSchema>> {
 
         const cid = task.correlationId;
-
+        
+        
         const flow = new GaleOrchestrator(this.flow, cid!, this.execContext!);
-
+        
         if (task.command.command === "start") {
             return await flow.start(task.taskInputData);
         }

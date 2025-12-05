@@ -52,7 +52,7 @@ export class SectionGenealogyAgent extends GaleAgent<typeof SectionGenealogyAgen
             model: anthropicClaude37SonnetV1("eu"),
         });
 
-        logger.compute(cid, `Detecting genealogy in section [${inputData.sectionCode}] for topic [${inputData.topicId} - ${inputData.topicCode}]`, "info");
+        logger.compute(cid, `Task [${task.taskId}] Detecting genealogy in section [${inputData.sectionCode}] for topic [${inputData.topicId} - ${inputData.topicCode}]`, "info");
 
         // 1. Retrieve section content
         const sectionContent = await new TomeKnowledgeBase(this.config!).getSectionContent(inputData.topicCode, inputData.sectionCode, inputData.sectionIndex);

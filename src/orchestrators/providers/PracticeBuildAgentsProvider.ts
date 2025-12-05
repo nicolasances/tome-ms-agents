@@ -6,6 +6,7 @@ import { API_DEPENDENCIES, ControllerConfig } from "../../Config";
 import { ExecutionContext, TotoRuntimeError } from "toto-api-controller";
 import { SectionClassificationAgent } from "../../agents/practice/SectionClassificationAgent";
 import { SectionGenealogyAgent } from "../../agents/practice/SectionGenealogyAgent";
+import { SectionTimelineAgent } from "../../agents/practice/SectionTimelineAgent";
 
 /**
  * Provides agents for the classification group in the practice build orchestrator.
@@ -27,7 +28,7 @@ export async function classificationAgents(input: z.infer<typeof PracticeBuilder
                 sectionIndex: index,
                 topicId: input.topicId,
                 topicCode: input.topicCode
-            } as z.infer<typeof SectionClassificationAgent.inputSchema>, 
+            } as z.infer<typeof SectionClassificationAgent.inputSchema>,
         })
     );
 
@@ -42,10 +43,12 @@ export async function classificationAgents(input: z.infer<typeof PracticeBuilder
  * @param input expects inputs to be a LIST of SectionClassificationAgent.outputSchema
  * @param execContext 
  */
-export async function sectionGenealogyAgents(input: z.infer<typeof SectionClassificationAgent.outputSchema>[], execContext: ExecutionContext): Promise<AgentNode[]> {
+export async function sectionGenealogyAgents(input: z.infer<typeof PracticeBuilderOrchestratorAgent.resumeInputSchema>, execContext: ExecutionContext): Promise<AgentNode[]> {
+
+    const inputData = input.childrenOutputs as z.infer<typeof SectionClassificationAgent.outputSchema>[];
 
     // 1. Filter sections labelled with "genealogy"
-    const genealogySections = input.filter(sectionOutput =>
+    const genealogySections = inputData.filter(sectionOutput =>
         sectionOutput.labels.some(label => label === "genealogy")
     );
 
@@ -59,6 +62,35 @@ export async function sectionGenealogyAgents(input: z.infer<typeof SectionClassi
                 sectionCode: section.sectionCode,
                 sectionIndex: section.sectionIndex,
             } as z.infer<typeof SectionGenealogyAgent.inputSchema>,
+        })
+    );
+
+}
+
+/**
+ * Generates the agents responsible for extracting timeline information from sections.
+ * 
+ * ONLY considers sections that were labelled with the "timeline" label.
+ */
+export async function sectionTimelineAgents(input: z.infer<typeof PracticeBuilderOrchestratorAgent.resumeInputSchema>): Promise<AgentNode[]> {
+
+    const inputData = input.childrenOutputs as z.infer<typeof SectionClassificationAgent.outputSchema>[];
+
+    // 1. Filter sections labelled with "timeline"
+    const timelineSections = inputData.filter(sectionOutput =>
+        sectionOutput.labels.some(label => label === "timeline")
+    );
+
+    // 2. Generate one GenealogicTreeAgent per genealogy section
+    return timelineSections.map(section =>
+        new AgentNode({
+            taskId: SectionTimelineAgent.taskId,
+            taskInputData: {
+                topicId: section.topicId,
+                topicCode: section.topicCode,
+                sectionCode: section.sectionCode,
+                sectionIndex: section.sectionIndex,
+            } as z.infer<typeof SectionTimelineAgent.inputSchema>,
         })
     );
 

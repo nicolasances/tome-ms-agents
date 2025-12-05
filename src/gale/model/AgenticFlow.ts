@@ -27,8 +27,8 @@ export class AgenticFlow {
         this.root.assignPathIds('');
     }
 
-    public findNode(pathId: string): AbstractNode | null {
-        return this.root.findNode(pathId);
+    public findNode(pathOrGroupId: string): AbstractNode | null {
+        return this.root.findNode(pathOrGroupId);
     }
 
 }
@@ -60,13 +60,15 @@ export abstract class AbstractNode {
 
     abstract assignPathIds(prefix: string): void;
 
-    public findNode(pathId: string): AbstractNode | null {
+    public findNode(pathOrGroupId: string): AbstractNode | null {
 
-        if (this.pathIdentifier === pathId) return this;
+        if (this.pathIdentifier === pathOrGroupId) return this;
+
+        if (this.type === 'group' && (this as any as GroupNode).groupId === pathOrGroupId) return this;
 
         // Search in next
         if (this.next) {
-            const foundInNext = this.next.findNode(pathId);
+            const foundInNext = this.next.findNode(pathOrGroupId);
             if (foundInNext) return foundInNext;
         }
         return null;

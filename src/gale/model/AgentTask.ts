@@ -95,7 +95,7 @@ export interface StartCommand {
 }
 export interface ResumeCommand {
     command: "resume";
-    completedSubtaskGroupId: string; // The ID of the group of subtasks that have been completed, triggering the resumption of the parent task.
+    completedTaskGroupId: string; // The ID of the group of subtasks that have been completed, triggering the resumption of the parent task.
     branchId?: string; // The ID of the branch within the task execution flow. In case of RESUME commands, this is mandatory
 }
 

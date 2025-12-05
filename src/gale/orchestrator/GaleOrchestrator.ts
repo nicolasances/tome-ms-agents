@@ -1,11 +1,15 @@
-import { ExecutionContext, TotoRuntimeError, ValidationError } from "toto-api-controller";
+import { ExecutionContext, Logger, TotoRuntimeError, ValidationError } from "toto-api-controller";
 import { DeterministicFlow as DeterministicFlow, FlowNode } from "../model/DeterministicFlow";
 import { AgenticFlow, AgentNode, BranchNode, GroupNode } from "../model/AgenticFlow";
 import { AgentTaskOrchestratorResponse, Command, ResumeCommand, TaskGroup } from "../model/AgentTask";
 
 export class GaleOrchestrator {
 
-    constructor(private flow: AgenticFlow, private correlationId: string, private execContext: ExecutionContext) { }
+    logger: Logger;
+
+    constructor(private flow: AgenticFlow, private correlationId: string, private execContext: ExecutionContext) {
+        this.logger = execContext.logger;
+     }
 
     /**
      * Starts the orchestrator flow.
@@ -32,10 +36,16 @@ export class GaleOrchestrator {
      */
     async resume(input: any, command: ResumeCommand): Promise<AgentTaskOrchestratorResponse<any>> {
 
+        this.logger.compute(this.correlationId, `Resuming Gale Orchestrator for correlationId [${this.correlationId}] after completion of group [${command.completedTaskGroupId}]`, "info");
+
         // Find what to process next. The resume command contains the group Id that was completed => process the "next" of that group.
-        const completedNode = this.flow.findNode(command.completedSubtaskGroupId);
+        const completedNode = this.flow.findNode(command.completedTaskGroupId);
+
+        this.logger.compute(this.correlationId, `Found completed node of type [${completedNode?.getType()}] for groupId [${command.completedTaskGroupId}]`, "info");
 
         const nextNode = completedNode?.getNext();
+
+        this.logger.compute(this.correlationId, `Next node to process is of type [${nextNode?.getType()}]`, "info");
 
         if (nextNode) {
             if (nextNode.getType() == "group") return this.processGroup(nextNode as GroupNode, input);
@@ -44,7 +54,7 @@ export class GaleOrchestrator {
             else throw new TotoRuntimeError(500, `Next node type [${nextNode.getType()}] not supported in Gale Orchestrator.`);
         }
 
-        return new AgentTaskOrchestratorResponse("completed", this.correlationId, { done: true, msg: `Nothing to do after group ${command.completedSubtaskGroupId}` });
+        return new AgentTaskOrchestratorResponse("completed", this.correlationId, { done: true, msg: `Nothing to do after group ${command.completedTaskGroupId}` });
 
     }
 
@@ -56,11 +66,14 @@ export class GaleOrchestrator {
      */
     private async processAgent(agent: AgentNode, input: any): Promise<AgentTaskOrchestratorResponse<any>> {
 
+        // Apply input mapper if provided, otherwise use the agent's taskInputData
+        const taskInputData = agent.taskInputMapper ? agent.taskInputMapper(input) : agent.taskInputData;
+
         return new AgentTaskOrchestratorResponse("subtasks", this.correlationId, {}, [{
             groupId: agent.getPathId()!,    // Using something that can be reconstructed later as a group id, so that when this agent completes, I can resume from the next node
             tasks: [{
                 taskId: agent.taskId,
-                taskInputData: agent.taskInputData
+                taskInputData: taskInputData
             }]
         }]);
     }
