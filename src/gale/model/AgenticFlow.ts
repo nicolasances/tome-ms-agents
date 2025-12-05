@@ -60,19 +60,7 @@ export abstract class AbstractNode {
 
     abstract assignPathIds(prefix: string): void;
 
-    public findNode(pathOrGroupId: string): AbstractNode | null {
-
-        if (this.pathIdentifier === pathOrGroupId) return this;
-
-        if (this.type === 'group' && (this as any as GroupNode).groupId === pathOrGroupId) return this;
-
-        // Search in next
-        if (this.next) {
-            const foundInNext = this.next.findNode(pathOrGroupId);
-            if (foundInNext) return foundInNext;
-        }
-        return null;
-    }
+    abstract findNode(pathOrGroupId: string): AbstractNode | null; 
 
 }
 
@@ -96,6 +84,12 @@ export class AgentNode extends AbstractNode {
     assignPathIds(prefix: string): void {
         this.pathIdentifier = prefix + ".a";
         if (this.next) this.next.assignPathIds(this.pathIdentifier);
+    }
+
+    findNode(pathOrGroupId: string): AbstractNode | null {
+        if (this.pathIdentifier === pathOrGroupId) return this;
+        else if (this.next) return this.next.findNode(pathOrGroupId);
+        else return null;
     }
 
 }
@@ -132,6 +126,14 @@ export class GroupNode extends AbstractNode {
         }
     }
 
+    findNode(pathOrGroupId: string): AbstractNode | null {
+        if (this.pathIdentifier === pathOrGroupId || this.groupId === pathOrGroupId) return this;
+
+        if (this.next) return this.next.findNode(pathOrGroupId);
+
+        return null;
+    }
+
 
 }
 
@@ -161,5 +163,20 @@ export class BranchNode extends AbstractNode {
             branch.branch.assignPathIds(branchPrefix);
         }
         if (this.next) this.next.assignPathIds(this.pathIdentifier);
+    }
+
+    findNode(pathOrGroupId: string): AbstractNode | null {
+        
+        if (this.pathIdentifier === pathOrGroupId) return this;
+
+        for (let i = 0; i < this.branches.length; i++) {
+            const branch = this.branches[i];
+            const foundInBranch = branch.branch.findNode(pathOrGroupId);
+            if (foundInBranch) return foundInBranch;
+        }
+
+        if (this.next) return this.next.findNode(pathOrGroupId);
+
+        return null;
     }
 }

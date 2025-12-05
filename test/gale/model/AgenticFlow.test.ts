@@ -241,7 +241,7 @@ describe('AgenticFlow - Path ID Assignment', () => {
 
         const group1 = flow.root as GroupNode;
         const g1a1 = group1.agents![0];
-        const g1a2 = group1.agents![1]; 
+        const g1a2 = group1.agents![1];
         const group2 = group1.getNext() as GroupNode;
         const g2a1 = group2.agents![0];
         const g2a2 = group2.agents![1];
@@ -256,7 +256,7 @@ describe('AgenticFlow - Path ID Assignment', () => {
         expect(g2a1.getPathId()).to.equal('.g.g.a1.a');
         expect(g2a2.getPathId()).to.equal('.g.g.a2.a');
         expect(group3.getPathId()).to.equal('.g.g.g');
-        expect(g3a1.getPathId()).to.equal('.g.g.g.a1.a');   
+        expect(g3a1.getPathId()).to.equal('.g.g.g.a1.a');
     });
 
     it('Branch chain', () => {
@@ -266,12 +266,12 @@ describe('AgenticFlow - Path ID Assignment', () => {
                 branches: [
                     { branchId: 'branch-1', branch: new AgentNode({ taskId: 'agent-1' }) },
                     { branchId: 'branch-2', branch: new AgentNode({ taskId: 'agent-2' }) }
-                ], 
+                ],
                 next: new BranchNode({
                     branches: [
-                        { branchId: 'branch-1', branch: new AgentNode({ taskId: 'agent-3' }) }, 
+                        { branchId: 'branch-1', branch: new AgentNode({ taskId: 'agent-3' }) },
                         { branchId: 'branch-2', branch: new AgentNode({ taskId: 'agent-4' }) }
-                    ], 
+                    ],
                     next: new BranchNode({
                         branches: [
                             { branchId: 'branch-1', branch: new AgentNode({ taskId: 'agent-5' }) }
@@ -298,5 +298,53 @@ describe('AgenticFlow - Path ID Assignment', () => {
         expect(b2a2.getPathId()).to.equal('.br.br.b2.a');
         expect(branch3.getPathId()).to.equal('.br.br.br');
         expect(b3a1.getPathId()).to.equal('.br.br.br.b1.a');
+    });
+
+    it('Nested group referenced by group id rather than path id', () => {
+        // Create the flow
+        const flow = new AgenticFlow(
+            new GroupNode({
+                groupId: "sections-classification-group",
+                next: new BranchNode({
+                    branches: [
+                        {
+                            branchId: "sections-genealogy-branch",
+                            branch: new GroupNode({
+                                groupId: "sections-genealogy-group",
+                                next: new BranchNode({
+                                    branches: [
+                                        {
+                                            branchId: "genealogy-personalities-branch",
+                                            branch: new AgentNode({
+                                                taskId: "PersonalitiesConsolidationAgent.taskId",
+                                            })
+                                        },
+                                        {
+                                            branchId: "genealogy-tree-branch",
+                                            branch: new AgentNode({
+                                                taskId: "GenealogicTreeAgent.taskId",
+                                            })
+                                        }
+                                    ]
+                                })
+                            })
+                        },
+                        {
+                            branchId: "sections-timeline-branch",
+                            branch: new GroupNode({
+                                groupId: "sections-timeline-group",
+                            })
+                        }
+                    ]
+                })
+            })
+        )
+
+        // sections-genealogy-group is completed => find it by group id
+        const genealogyGroupNode = flow.findNode("sections-genealogy-group");
+        
+        expect(genealogyGroupNode).to.not.be.null;
+        expect(genealogyGroupNode).to.be.instanceOf(GroupNode);
+        expect((genealogyGroupNode as GroupNode).groupId).to.equal("sections-genealogy-group");
     });
 });
