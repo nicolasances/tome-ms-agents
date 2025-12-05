@@ -47,7 +47,6 @@ export class PracticeBuilderOrchestratorAgent extends GaleOrchestratorAgent<type
     private flow = new AgenticFlow(
         new GroupNode({
             groupId: "sections-classification-group",
-            name: "sections-classification-group",
             agentsProvider: classificationAgents,
             next: new BranchNode({
                 branches: [
@@ -55,7 +54,6 @@ export class PracticeBuilderOrchestratorAgent extends GaleOrchestratorAgent<type
                         branchId: "sections-genealogy-branch",
                         branch: new GroupNode({
                             groupId: "sections-genealogy-group",
-                            name: "sections-genealogy-group",
                             agentsProvider: sectionGenealogyAgents,
                             next: new BranchNode({
                                 branches: [
@@ -89,7 +87,6 @@ export class PracticeBuilderOrchestratorAgent extends GaleOrchestratorAgent<type
     async executeTask(task: AgentTaskRequest<typeof PracticeBuilderOrchestratorAgent.inputSchema | typeof PracticeBuilderOrchestratorAgent.resumeInputSchema>): Promise<AgentTaskOrchestratorResponse<typeof PracticeBuilderOrchestratorAgent.outputSchema>> {
 
         const cid = task.correlationId;
-        const logger = this.logger!;
 
         const flow = new GaleOrchestrator(this.flow, cid!, this.execContext!);
 
