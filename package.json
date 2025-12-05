@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "npx nodemon",
     "build": "tsc",
-    "start": "node build/index.js"
+    "start": "node build/index.js",
+    "test": "mocha -r ts-node/register test/**/*.test.ts"
   },
   "author": "nicolasances",
   "license": "ISC",

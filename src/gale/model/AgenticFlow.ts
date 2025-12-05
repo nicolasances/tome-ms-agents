@@ -93,6 +93,7 @@ export class AgentNode extends AbstractNode {
 
     assignPathIds(prefix: string): void {
         this.pathIdentifier = prefix + ".a";
+        if (this.next) this.next.assignPathIds(this.pathIdentifier);
     }
 
 }
@@ -154,9 +155,9 @@ export class BranchNode extends AbstractNode {
         // Assign group IDs to each branch. E.g. b1, b2, etc.
         for (let i = 0; i < this.branches.length; i++) {
             const branch = this.branches[i];
-            const branchPrefix = `${prefix}.b${i + 1}`;
+            const branchPrefix = `${this.pathIdentifier}.b${i + 1}`;
             branch.branch.assignPathIds(branchPrefix);
         }
-        if (this.next) this.next.assignPathIds(prefix + ".n");
+        if (this.next) this.next.assignPathIds(this.pathIdentifier);
     }
 }
