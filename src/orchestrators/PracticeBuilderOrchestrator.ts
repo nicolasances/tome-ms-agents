@@ -1,12 +1,12 @@
 import { z } from "genkit";
 import { GaleOrchestratorAgent, GaleOrchestratorAgentManifest } from "../gale/GaleAgent";
-import { AgentTaskRequest, AgentTaskOrchestratorResponse } from "../gale/model/AgentTask";
+import { AgentTaskRequest, AgentTaskOrchestratorResponse, ResumeTaskInputData, StartTaskInputData } from "../gale/model/AgentTask";
 import { GaleOrchestrator } from "../gale/orchestrator/GaleOrchestrator";
-import { SectionTimelineAgent } from "../agents/practice/SectionTimelineAgent";
 import { AgenticFlow, AgentNode, BranchNode, GroupNode } from "../gale/model/AgenticFlow";
 import { GenealogicTreeAgent } from "../agents/practice/GenealogicTreeAgent";
 import { PersonalitiesConsolidationAgent } from "../agents/practice/PersonalitiesConsolidationAgent";
 import { classificationAgents, sectionGenealogyAgents, sectionTimelineAgents } from "./providers/PracticeBuildAgentsProvider";
+import { SectionGenealogyAgent } from "../agents/practice/SectionGenealogyAgent";
 
 /**
  * This agent is the ORCHESTRATOR for building practices for a give Tome Topic.
@@ -59,14 +59,16 @@ export class PracticeBuilderOrchestratorAgent extends GaleOrchestratorAgent<type
                                 branches: [
                                     {
                                         branchId: "genealogy-personalities-branch",
-                                        branch: new AgentNode({
+                                        branch: new AgentNode<typeof PersonalitiesConsolidationAgent.inputSchema>({
                                             taskId: PersonalitiesConsolidationAgent.taskId,
+                                            taskInputMapper: (input: ResumeTaskInputData) => ({topicId: input.originalInput.topicId, topicCode: input.originalInput.topicCode, peopleDescriptions: (input.childrenOutputs as z.infer<typeof SectionGenealogyAgent.outputSchema>[]).flatMap(co => co.info.people)})
                                         })
                                     },
                                     {
                                         branchId: "genealogy-tree-branch",
-                                        branch: new AgentNode({
+                                        branch: new AgentNode<typeof GenealogicTreeAgent.inputSchema>({
                                             taskId: GenealogicTreeAgent.taskId,
+                                            taskInputMapper: (input: ResumeTaskInputData) => ({topicId: input.originalInput.topicId, topicCode: input.originalInput.topicCode, relationships: (input.childrenOutputs as z.infer<typeof SectionGenealogyAgent.outputSchema>[]).flatMap(co => co.info.genealogies), peopleDescriptions: (input.childrenOutputs as z.infer<typeof SectionGenealogyAgent.outputSchema>[]).flatMap(co => co.info.people)})
                                         })
                                     }
                                 ]

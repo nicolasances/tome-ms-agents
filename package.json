@@ -7,7 +7,7 @@
     "dev": "npx nodemon",
     "build": "tsc",
     "start": "node build/index.js",
-    "test": "mocha -r ts-node/register test/**/*.test.ts"
+    "test": "mocha --require tsx/cjs 'test/**/*.test.ts'"
   },
   "author": "nicolasances",
   "license": "ISC",
@@ -42,9 +42,11 @@
     "@types/node": "^16.11.7",
     "@types/uuid": "^10.0.0",
     "chai": "^6.2.1",
+    "cross-env": "^7.0.3",
     "mocha": "^11.7.5",
     "nodemon": "^3.0.1",
     "ts-node": "^10.9.1",
+    "tsx": "^4.21.0",
     "typescript": "^5.2.2"
   }
 }

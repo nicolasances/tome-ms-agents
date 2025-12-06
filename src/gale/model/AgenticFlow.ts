@@ -1,4 +1,6 @@
 import { ExecutionContext, TotoRuntimeError } from "toto-api-controller";
+import { StartTaskInputData, ResumeTaskInputData } from "./AgentTask";
+import { z } from "genkit";
 
 export class AgenticFlow {
 
@@ -60,17 +62,18 @@ export abstract class AbstractNode {
 
     abstract assignPathIds(prefix: string): void;
 
-    abstract findNode(pathOrGroupId: string): AbstractNode | null; 
+    abstract findNode(pathOrGroupId: string): AbstractNode | null;
 
 }
 
-export class AgentNode extends AbstractNode {
+export class AgentNode<T extends z.ZodTypeAny> extends AbstractNode {
+
 
     taskId: string;
-    taskInputData?: any;
-    taskInputMapper?: (input: any) => any;
+    taskInputData?: z.infer<T>;
+    taskInputMapper?: (input: StartTaskInputData | ResumeTaskInputData) => z.infer<T>;
 
-    constructor({ taskId, taskInputData, taskInputMapper, name, next }: { taskId: string, taskInputData?: any, taskInputMapper?: (input: any) => any, name?: string, next?: AbstractNode }) {
+    constructor({ taskId, taskInputData, taskInputMapper, name, next }: { taskId: string, taskInputData?: z.infer<T>, taskInputMapper?: (input: StartTaskInputData | ResumeTaskInputData) => z.infer<T>, name?: string, next?: AbstractNode }) {
         super();
 
         this.taskId = taskId;
@@ -95,11 +98,11 @@ export class AgentNode extends AbstractNode {
 }
 
 export class GroupNode extends AbstractNode {
-    agents?: AgentNode[];
-    agentsProvider?: (input: any, execContext: ExecutionContext) => Promise<AgentNode[]>; // Function to provide agents dynamically
+    agents?: AgentNode<any>[];
+    agentsProvider?: (input: any, execContext: ExecutionContext) => Promise<AgentNode<any>[]>; // Function to provide agents dynamically
     groupId: string;
 
-    constructor({ agents, agentsProvider, groupId, name, next }: { agents?: AgentNode[], agentsProvider?: (input: any, execContext: ExecutionContext) => Promise<AgentNode[]>, groupId: string, name?: string, next?: AbstractNode }) {
+    constructor({ agents, agentsProvider, groupId, name, next }: { agents?: AgentNode<any>[], agentsProvider?: (input: any, execContext: ExecutionContext) => Promise<AgentNode<any>[]>, groupId: string, name?: string, next?: AbstractNode }) {
         super();
 
         this.type = "group";
@@ -166,7 +169,7 @@ export class BranchNode extends AbstractNode {
     }
 
     findNode(pathOrGroupId: string): AbstractNode | null {
-        
+
         if (this.pathIdentifier === pathOrGroupId) return this;
 
         for (let i = 0; i < this.branches.length; i++) {

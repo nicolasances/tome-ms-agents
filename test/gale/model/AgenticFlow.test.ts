@@ -10,9 +10,9 @@ describe('AgenticFlow - Path ID Assignment', () => {
             new GroupNode({
                 groupId: 'test-group-1',
                 agents: [
-                    new AgentNode({ taskId: 'agent-1' }),
-                    new AgentNode({ taskId: 'agent-2' }),
-                    new AgentNode({ taskId: 'agent-3' })
+                    new AgentNode<any>({ taskId: 'agent-1' }),
+                    new AgentNode<any>({ taskId: 'agent-2' }),
+                    new AgentNode<any>({ taskId: 'agent-3' })
                 ]
             })
         );
@@ -34,23 +34,23 @@ describe('AgenticFlow - Path ID Assignment', () => {
             new GroupNode({
                 groupId: 'initial-group',
                 agents: [
-                    new AgentNode({ taskId: 'agent-1' }),
-                    new AgentNode({ taskId: 'agent-2' }),
-                    new AgentNode({ taskId: 'agent-3' })
+                    new AgentNode<any>({ taskId: 'agent-1' }),
+                    new AgentNode<any>({ taskId: 'agent-2' }),
+                    new AgentNode<any>({ taskId: 'agent-3' })
                 ],
                 next: new BranchNode({
                     branches: [
                         {
                             branchId: 'branch-1',
-                            branch: new AgentNode({ taskId: 'branch1-agent' })
+                            branch: new AgentNode<any>({ taskId: 'branch1-agent' })
                         },
                         {
                             branchId: 'branch-2',
                             branch: new GroupNode({
                                 groupId: 'branch2-group',
                                 agents: [
-                                    new AgentNode({ taskId: 'branch2-agent-1' }),
-                                    new AgentNode({ taskId: 'branch2-agent-2' })
+                                    new AgentNode<any>({ taskId: 'branch2-agent-1' }),
+                                    new AgentNode<any>({ taskId: 'branch2-agent-2' })
                                 ]
                             })
                         }
@@ -62,7 +62,7 @@ describe('AgenticFlow - Path ID Assignment', () => {
         const branchNode = (flow.root.getNext() as BranchNode);
 
         const initialGroup = flow.root as GroupNode;
-        const branch1Agent = branchNode.branches[0].branch as AgentNode;
+        const branch1Agent = branchNode.branches[0].branch as AgentNode<any>;
         const branch2Group = (flow.root.getNext() as BranchNode).branches[1].branch as GroupNode;
 
         // Verify initial group
@@ -86,12 +86,12 @@ describe('AgenticFlow - Path ID Assignment', () => {
     it('Flow starting with agent, followed by branch with 2 single-agent branches', () => {
         // Create the flow
         const flow = new AgenticFlow(
-            new AgentNode({
+            new AgentNode<any>({
                 taskId: 'initial-agent',
                 next: new BranchNode({
                     branches: [
-                        { branchId: 'branch-1', branch: new AgentNode({ taskId: 'branch1-agent' }) },
-                        { branchId: 'branch-2', branch: new AgentNode({ taskId: 'branch2-agent' }) }
+                        { branchId: 'branch-1', branch: new AgentNode<any>({ taskId: 'branch1-agent' }) },
+                        { branchId: 'branch-2', branch: new AgentNode<any>({ taskId: 'branch2-agent' }) }
                     ]
                 })
             })
@@ -99,9 +99,9 @@ describe('AgenticFlow - Path ID Assignment', () => {
 
         const branchNode = (flow.root.getNext() as BranchNode);
 
-        const initialAgent = flow.root as AgentNode;
-        const branch1Agent = branchNode.branches[0].branch as AgentNode;
-        const branch2Agent = branchNode.branches[1].branch as AgentNode;
+        const initialAgent = flow.root as AgentNode<any>;
+        const branch1Agent = branchNode.branches[0].branch as AgentNode<any>;
+        const branch2Agent = branchNode.branches[1].branch as AgentNode<any>;
 
         // Verify initial agent
         expect((initialAgent as any).pathIdentifier).to.equal('.a');
@@ -126,10 +126,10 @@ describe('AgenticFlow - Path ID Assignment', () => {
                         branch: new GroupNode({
                             groupId: 'branch1-group',
                             agents: [
-                                new AgentNode({ taskId: 'branch1-agent-1' }),
-                                new AgentNode({ taskId: 'branch1-agent-2' })
+                                new AgentNode<any>({ taskId: 'branch1-agent-1' }),
+                                new AgentNode<any>({ taskId: 'branch1-agent-2' })
                             ],
-                            next: new AgentNode({ taskId: 'branch1-next-agent' })
+                            next: new AgentNode<any>({ taskId: 'branch1-next-agent' })
                         })
                     },
                     {
@@ -137,16 +137,16 @@ describe('AgenticFlow - Path ID Assignment', () => {
                             new GroupNode({
                                 groupId: 'branch2-group',
                                 agents: [
-                                    new AgentNode({
+                                    new AgentNode<any>({
                                         taskId: 'branch2-agent-1',
-                                        next: new AgentNode({ taskId: 'branch2-agent-1-spinoff' })
+                                        next: new AgentNode<any>({ taskId: 'branch2-agent-1-spinoff' })
                                     }),
-                                    new AgentNode({
+                                    new AgentNode<any>({
                                         taskId: 'branch2-agent-2',
                                         next: new BranchNode({
                                             branches: [
-                                                { branchId: 'nested-branch-1', branch: new AgentNode({ taskId: 'nested-branch1-agent' }) },
-                                                { branchId: 'nested-branch-2', branch: new AgentNode({ taskId: 'nested-branch2-agent' }) }
+                                                { branchId: 'nested-branch-1', branch: new AgentNode<any>({ taskId: 'nested-branch1-agent' }) },
+                                                { branchId: 'nested-branch-2', branch: new AgentNode<any>({ taskId: 'nested-branch2-agent' }) }
                                             ]
                                         })
                                     })
@@ -159,8 +159,8 @@ describe('AgenticFlow - Path ID Assignment', () => {
 
         const branch1Group = (flow.root as BranchNode).branches[0].branch as GroupNode;
         const branch2Group = (flow.root as BranchNode).branches[1].branch as GroupNode;
-        const branch1NextAgent = branch1Group.getNext() as AgentNode;
-        const branch2Agent1SpinOff = branch2Group.agents![0].getNext() as AgentNode;
+        const branch1NextAgent = branch1Group.getNext() as AgentNode<any>;
+        const branch2Agent1SpinOff = branch2Group.agents![0].getNext() as AgentNode<any>;
         const nestedBranch = branch2Group.agents![1].getNext() as BranchNode;
 
         const mainBranch = flow.root as BranchNode;
@@ -183,8 +183,8 @@ describe('AgenticFlow - Path ID Assignment', () => {
 
         expect((branch2Agent1SpinOff as any).pathIdentifier).to.equal('.br.b2.g.a1.a.a');
 
-        const nestedBranch1Agent = nestedBranch.branches[0].branch as AgentNode;
-        const nestedBranch2Agent = nestedBranch.branches[1].branch as AgentNode;
+        const nestedBranch1Agent = nestedBranch.branches[0].branch as AgentNode<any>;
+        const nestedBranch2Agent = nestedBranch.branches[1].branch as AgentNode<any>;
 
         expect((nestedBranch as any).pathIdentifier).to.equal('.br.b2.g.a2.a.br');
         expect((nestedBranch1Agent as any).pathIdentifier).to.equal('.br.b2.g.a2.a.br.b1.a');
@@ -194,20 +194,20 @@ describe('AgenticFlow - Path ID Assignment', () => {
     it('Group chain', () => {
         // Create the flow
         const flow = new AgenticFlow(
-            new AgentNode({
+            new AgentNode<any>({
                 taskId: 'agent-1',
-                next: new AgentNode({
+                next: new AgentNode<any>({
                     taskId: 'agent-2',
-                    next: new AgentNode({
+                    next: new AgentNode<any>({
                         taskId: 'agent-3'
                     })
                 })
             })
         );
 
-        const agent1 = flow.root as AgentNode;
-        const agent2 = agent1.getNext() as AgentNode;
-        const agent3 = agent2.getNext() as AgentNode;
+        const agent1 = flow.root as AgentNode<any>;
+        const agent2 = agent1.getNext() as AgentNode<any>;
+        const agent3 = agent2.getNext() as AgentNode<any>;
 
         expect(agent1.getPathId()).to.equal('.a');
         expect(agent2.getPathId()).to.equal('.a.a');
@@ -220,19 +220,19 @@ describe('AgenticFlow - Path ID Assignment', () => {
             new GroupNode({
                 groupId: 'group-1',
                 agents: [
-                    new AgentNode({ taskId: 'agent-1' }),
-                    new AgentNode({ taskId: 'agent-2' }),
+                    new AgentNode<any>({ taskId: 'agent-1' }),
+                    new AgentNode<any>({ taskId: 'agent-2' }),
                 ],
                 next: new GroupNode({
                     groupId: 'group-2',
                     agents: [
-                        new AgentNode({ taskId: 'agent-3' }),
-                        new AgentNode({ taskId: 'agent-4' }),
+                        new AgentNode<any>({ taskId: 'agent-3' }),
+                        new AgentNode<any>({ taskId: 'agent-4' }),
                     ],
                     next: new GroupNode({
                         groupId: 'group-3',
                         agents: [
-                            new AgentNode({ taskId: 'agent-5' })
+                            new AgentNode<any>({ taskId: 'agent-5' })
                         ]
                     })
                 })
@@ -264,17 +264,17 @@ describe('AgenticFlow - Path ID Assignment', () => {
         const flow = new AgenticFlow(
             new BranchNode({
                 branches: [
-                    { branchId: 'branch-1', branch: new AgentNode({ taskId: 'agent-1' }) },
-                    { branchId: 'branch-2', branch: new AgentNode({ taskId: 'agent-2' }) }
+                    { branchId: 'branch-1', branch: new AgentNode<any>({ taskId: 'agent-1' }) },
+                    { branchId: 'branch-2', branch: new AgentNode<any>({ taskId: 'agent-2' }) }
                 ],
                 next: new BranchNode({
                     branches: [
-                        { branchId: 'branch-1', branch: new AgentNode({ taskId: 'agent-3' }) },
-                        { branchId: 'branch-2', branch: new AgentNode({ taskId: 'agent-4' }) }
+                        { branchId: 'branch-1', branch: new AgentNode<any>({ taskId: 'agent-3' }) },
+                        { branchId: 'branch-2', branch: new AgentNode<any>({ taskId: 'agent-4' }) }
                     ],
                     next: new BranchNode({
                         branches: [
-                            { branchId: 'branch-1', branch: new AgentNode({ taskId: 'agent-5' }) }
+                            { branchId: 'branch-1', branch: new AgentNode<any>({ taskId: 'agent-5' }) }
                         ]
                     })
                 })
@@ -282,13 +282,13 @@ describe('AgenticFlow - Path ID Assignment', () => {
         );
 
         const branch1 = flow.root as BranchNode;
-        const b1a1 = branch1.branches[0].branch as AgentNode;
-        const b1a2 = branch1.branches[1].branch as AgentNode;
+        const b1a1 = branch1.branches[0].branch as AgentNode<any>;
+        const b1a2 = branch1.branches[1].branch as AgentNode<any>;
         const branch2 = branch1.getNext() as BranchNode;
-        const b2a1 = branch2.branches[0].branch as AgentNode;
-        const b2a2 = branch2.branches[1].branch as AgentNode;
+        const b2a1 = branch2.branches[0].branch as AgentNode<any>;
+        const b2a2 = branch2.branches[1].branch as AgentNode<any>;
         const branch3 = branch2.getNext() as BranchNode;
-        const b3a1 = branch3.branches[0].branch as AgentNode;
+        const b3a1 = branch3.branches[0].branch as AgentNode<any>;
 
         expect(branch1.getPathId()).to.equal('.br');
         expect(b1a1.getPathId()).to.equal('.br.b1.a');
@@ -315,13 +315,13 @@ describe('AgenticFlow - Path ID Assignment', () => {
                                     branches: [
                                         {
                                             branchId: "genealogy-personalities-branch",
-                                            branch: new AgentNode({
+                                            branch: new AgentNode<any>({
                                                 taskId: "PersonalitiesConsolidationAgent.taskId",
                                             })
                                         },
                                         {
                                             branchId: "genealogy-tree-branch",
-                                            branch: new AgentNode({
+                                            branch: new AgentNode<any>({
                                                 taskId: "GenealogicTreeAgent.taskId",
                                             })
                                         }

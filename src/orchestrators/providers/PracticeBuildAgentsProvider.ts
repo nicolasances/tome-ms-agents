@@ -11,7 +11,7 @@ import { SectionTimelineAgent } from "../../agents/practice/SectionTimelineAgent
 /**
  * Provides agents for the classification group in the practice build orchestrator.
  */
-export async function classificationAgents(input: z.infer<typeof PracticeBuilderOrchestratorAgent.inputSchema>, execContext: ExecutionContext): Promise<AgentNode[]> {
+export async function classificationAgents(input: z.infer<typeof PracticeBuilderOrchestratorAgent.inputSchema>, execContext: ExecutionContext): Promise<AgentNode<typeof SectionClassificationAgent.inputSchema>[]> {
 
     const config = execContext.config as ControllerConfig;
     const cid = execContext.cid;
@@ -21,7 +21,7 @@ export async function classificationAgents(input: z.infer<typeof PracticeBuilder
     if (!topic || !topic.sections || topic.sections.length === 0) throw new TotoRuntimeError(500, `Topic [${input.topicId}] has no sections defined.`);
 
     return topic.sections.map((section, index) =>
-        new AgentNode({
+        new AgentNode<typeof SectionClassificationAgent.inputSchema>({
             taskId: SectionClassificationAgent.taskId,
             taskInputData: {
                 sectionCode: section,
@@ -43,7 +43,7 @@ export async function classificationAgents(input: z.infer<typeof PracticeBuilder
  * @param input expects inputs to be a LIST of SectionClassificationAgent.outputSchema
  * @param execContext 
  */
-export async function sectionGenealogyAgents(input: z.infer<typeof PracticeBuilderOrchestratorAgent.resumeInputSchema>, execContext: ExecutionContext): Promise<AgentNode[]> {
+export async function sectionGenealogyAgents(input: z.infer<typeof PracticeBuilderOrchestratorAgent.resumeInputSchema>, execContext: ExecutionContext): Promise<AgentNode<typeof SectionGenealogyAgent.inputSchema>[]> {
 
     const inputData = input.childrenOutputs as z.infer<typeof SectionClassificationAgent.outputSchema>[];
 
@@ -54,7 +54,7 @@ export async function sectionGenealogyAgents(input: z.infer<typeof PracticeBuild
 
     // 2. Generate one GenealogicTreeAgent per genealogy section
     return genealogySections.map(section =>
-        new AgentNode({
+        new AgentNode<typeof SectionGenealogyAgent.inputSchema>({
             taskId: SectionGenealogyAgent.taskId,
             taskInputData: {
                 topicId: section.topicId,
@@ -72,7 +72,7 @@ export async function sectionGenealogyAgents(input: z.infer<typeof PracticeBuild
  * 
  * ONLY considers sections that were labelled with the "timeline" label.
  */
-export async function sectionTimelineAgents(input: z.infer<typeof PracticeBuilderOrchestratorAgent.resumeInputSchema>): Promise<AgentNode[]> {
+export async function sectionTimelineAgents(input: z.infer<typeof PracticeBuilderOrchestratorAgent.resumeInputSchema>): Promise<AgentNode<typeof SectionTimelineAgent.inputSchema>[]> {
 
     const inputData = input.childrenOutputs as z.infer<typeof SectionClassificationAgent.outputSchema>[];
 
@@ -83,7 +83,7 @@ export async function sectionTimelineAgents(input: z.infer<typeof PracticeBuilde
 
     // 2. Generate one GenealogicTreeAgent per genealogy section
     return timelineSections.map(section =>
-        new AgentNode({
+        new AgentNode<typeof SectionTimelineAgent.inputSchema>({
             taskId: SectionTimelineAgent.taskId,
             taskInputData: {
                 topicId: section.topicId,
