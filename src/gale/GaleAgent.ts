@@ -1,4 +1,4 @@
-import { Logger, TotoControllerConfig } from "toto-api-controller";
+import { ExecutionContext, Logger, TotoControllerConfig } from "toto-api-controller";
 import { AgentTaskRequest, AgentTaskResponse, AgentTaskOrchestratorResponse } from "./model/AgentTask";
 import { z } from "genkit";
 import { ValidationError } from "toto-api-controller";
@@ -7,6 +7,7 @@ export abstract class GaleAgent<I extends z.ZodTypeAny, O extends z.ZodTypeAny> 
 
     logger: Logger | undefined;
     config: TotoControllerConfig | undefined;
+    execContext: ExecutionContext | undefined;
 
     abstract manifest: GaleAgentManifest;
 

@@ -3,12 +3,12 @@ import { ControllerConfig } from "./Config";
 import { Gale } from "./gale/Gale";
 import { OnTopicEventHandler } from "./evt/OnTopicEvent";
 import { DevQImpl } from "./DevQImpl";
-import { PracticeBuilderOrchestratorAgent } from "./orchestrators/PracticeBuilderOrchestratorAgent";
 import { SectionClassificationAgent } from "./agents/practice/SectionClassificationAgent";
 import { SectionGenealogyAgent } from "./agents/practice/SectionGenealogyAgent";
 import { SectionTimelineAgent } from "./agents/practice/SectionTimelineAgent";
 import { GenealogicTreeAgent } from "./agents/practice/GenealogicTreeAgent";
 import { PersonalitiesConsolidationAgent } from "./agents/practice/PersonalitiesConsolidationAgent";
+import { PracticeBuilderOrchestratorAgent } from "./orchestrators/PracticeBuilderOrchestrator";
 
 const galeBrokerURL = `${String(process.env.GALE_BROKER_URL)}`;
 

@@ -7,6 +7,8 @@ import { LabelSchema } from "../../model/LabelSchema";
 
 export class SectionClassificationAgent extends GaleAgent<typeof SectionClassificationAgent.inputSchema, typeof SectionClassificationAgent.outputSchema> {
 
+    static taskId: string = "topic.section.classify";
+
     static inputSchema = z.object({
         topicId: z.string().describe("Unique identifier (database ID) of the Tome Topic to build practice for."),
         topicCode: z.string().describe("Unique code of the Tome Topic to build practice for. E.g. the-merovingians"),
@@ -24,7 +26,7 @@ export class SectionClassificationAgent extends GaleAgent<typeof SectionClassifi
 
     manifest: GaleAgentManifest = {
         agentName: "Tome Section Classifier",
-        taskId: "topic.section.classify",
+        taskId: SectionClassificationAgent.taskId,
         inputSchema: SectionClassificationAgent.inputSchema,
         outputSchema: SectionClassificationAgent.outputSchema,
         description: "Agent for labelling sections of a Tome Topic. This agent analyzes the content of a section and assigns one or more predefined labels based on the content's characteristics."
