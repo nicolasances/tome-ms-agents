@@ -9,6 +9,7 @@ import { SectionTimelineAgent } from "./agents/practice/SectionTimelineAgent";
 import { GenealogicTreeAgent } from "./agents/practice/GenealogicTreeAgent";
 import { PersonalitiesConsolidationAgent } from "./agents/practice/PersonalitiesConsolidationAgent";
 import { PracticeBuilderOrchestratorAgent } from "./orchestrators/PracticeBuilderOrchestrator";
+import { SectionJuiceAgent } from "./agents/practice/SectionJuiceAgent";
 
 const galeBrokerURL = `${String(process.env.GALE_BROKER_URL)}`;
 
@@ -31,6 +32,7 @@ gale.registerAgent(new SectionGenealogyAgent());
 gale.registerAgent(new SectionTimelineAgent());
 gale.registerAgent(new PersonalitiesConsolidationAgent());
 gale.registerAgent(new GenealogicTreeAgent());
+gale.registerAgent(new SectionJuiceAgent());
 
 api.registerPubSubEventHandler('topic', new OnTopicEventHandler())
 

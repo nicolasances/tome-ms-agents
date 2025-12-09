@@ -106,8 +106,8 @@ export async function sectionJuiceAgents(input: z.infer<typeof PracticeBuilderOr
     const inputData = input.childrenOutputs as z.infer<typeof SectionClassificationAgent.outputSchema>[];
 
     return inputData.map(section =>
-        new AgentNode<typeof SectionTimelineAgent.inputSchema>({
-            taskId: SectionTimelineAgent.taskId,
+        new AgentNode<typeof SectionJuiceAgent.inputSchema>({
+            taskId: SectionJuiceAgent.taskId,
             taskInputData: {
                 topicId: section.topicId,
                 topicCode: section.topicCode,
