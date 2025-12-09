@@ -3,6 +3,7 @@ import { anthropicClaude37SonnetV1, awsBedrock } from "genkitx-aws-bedrock";
 import { GaleAgent, GaleAgentManifest } from "../../gale/GaleAgent";
 import { AgentTaskRequest, AgentTaskResponse } from "../../gale/model/AgentTask";
 import { TomeKnowledgeBase } from "../../tomekb/TomeKnowledgeBase";
+import { TimelineSchema } from "../../model/TimelineSchema";
 
 
 export class SectionTimelineAgent extends GaleAgent<typeof SectionTimelineAgent.inputSchema, typeof SectionTimelineAgent.outputSchema> {
@@ -16,21 +17,12 @@ export class SectionTimelineAgent extends GaleAgent<typeof SectionTimelineAgent.
         sectionIndex: z.number().describe("Index of the section within the topic."),
     });
 
-    static timelineElementSchema = z.object({
-        year: z.number().optional().describe("Year of the timeline event as an integer."),
-        month: z.number().optional().describe("Month of the timeline event as an integer (1-12)."),
-        day: z.number().optional().describe("Day of the month of the timeline event as an integer (1-31)."),
-        description: z.string().describe("Description of the timeline event."),
-    });
-
-    static timelineSchema = z.array(SectionTimelineAgent.timelineElementSchema).describe("List of timeline events in chronological order extracted from the section content.");
-
     static outputSchema = z.object({
         topicId: z.string().describe("Unique identifier (database ID) of the Tome Topic."),
         topicCode: z.string().describe("Unique code of the Tome Topic."),
         sectionCode: z.string().describe("Code of the section that was classified."),
         sectionIndex: z.number().describe("Index of the section within the topic."),
-        timeline: SectionTimelineAgent.timelineSchema.describe("Timeline events extracted from the section content."),
+        timeline: TimelineSchema.describe("Timeline events extracted from the section content."),
     });
 
     manifest: GaleAgentManifest = {
@@ -77,7 +69,7 @@ export class SectionTimelineAgent extends GaleAgent<typeof SectionTimelineAgent.
             ${sectionContent}
         `
 
-        const response = await ai.generate({ prompt: prompt, output: { schema: SectionTimelineAgent.timelineSchema } });
+        const response = await ai.generate({ prompt: prompt, output: { schema: TimelineSchema } });
 
         // 3. Return classification result
         return new AgentTaskResponse("completed", cid, {
