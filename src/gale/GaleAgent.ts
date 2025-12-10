@@ -2,6 +2,7 @@ import { ExecutionContext, Logger, TotoControllerConfig } from "toto-api-control
 import { AgentTaskRequest, AgentTaskResponse, AgentTaskOrchestratorResponse } from "./model/AgentTask";
 import { z } from "genkit";
 import { ValidationError } from "toto-api-controller";
+import { Prompt } from "./util/Prompt";
 
 export abstract class GaleAgent<I extends z.ZodTypeAny, O extends z.ZodTypeAny> {
 
@@ -70,6 +71,19 @@ export abstract class GaleAgent<I extends z.ZodTypeAny, O extends z.ZodTypeAny> 
             this.logger?.compute(cid, `Task execution error: ${(error as Error).message}`, "error");
             return new AgentTaskResponse("failed", cid, null as any);
         }
+    }
+
+    /**
+     * Retrieves the prompt for the agent, filled with the provided input.
+     * 
+     * This method handles automatically any override of the prompt template coming from, for example, the playground.
+     * 
+     * @param input the input parameters to fill the prompt template. Input should be an object with key-value pairs matching the template parameters. (e.g. if the template contains {{parameterName}}, the input should contain { parameterName: "value" } )
+     */
+    async prompt(input: any): Promise<string> {
+
+        return Prompt.namedPrompt(this.manifest.taskId, input, { promptTemplateOverride: this.options?.playground?.promptOverride });
+
     }
 
     abstract executeTask(task: AgentTaskRequest<I>): Promise<AgentTaskResponse<O>>;

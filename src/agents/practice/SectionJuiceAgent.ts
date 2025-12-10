@@ -3,8 +3,6 @@ import { anthropicClaude37SonnetV1, awsBedrock } from "genkitx-aws-bedrock";
 import { GaleAgent, GaleAgentManifest } from "../../gale/GaleAgent";
 import { AgentTaskRequest, AgentTaskResponse } from "../../gale/model/AgentTask";
 import { TomeKnowledgeBase } from "../../tomekb/TomeKnowledgeBase";
-import Handlebars from "handlebars";
-import { Prompt } from "../../gale/util/Prompt";
 
 
 export class SectionJuiceAgent extends GaleAgent<typeof SectionJuiceAgent.inputSchema, typeof SectionJuiceAgent.outputSchema> {
@@ -63,7 +61,8 @@ export class SectionJuiceAgent extends GaleAgent<typeof SectionJuiceAgent.inputS
         // 1. Retrieve section content
         const sectionContent = await new TomeKnowledgeBase(this.config!).getSectionContent(inputData.topicCode, inputData.sectionCode, inputData.sectionIndex);
 
-        const prompt = await Prompt.namedPrompt(this.manifest.taskId, {sectionContent}, {promptTemplateOverride: this.options?.playground?.promptOverride});
+        // 2. Prompt
+        const prompt = await this.prompt({ sectionContent });
 
         const response = await ai.generate({ prompt: prompt, output: { schema: SectionJuiceAgent.juiceSchema } });
 
