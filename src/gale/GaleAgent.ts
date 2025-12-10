@@ -9,6 +9,8 @@ export abstract class GaleAgent<I extends z.ZodTypeAny, O extends z.ZodTypeAny> 
     config: TotoControllerConfig | undefined;
     execContext: ExecutionContext | undefined;
 
+    protected options?: AgentRunOptions;
+
     abstract manifest: GaleAgentManifest;
 
     /**
@@ -21,9 +23,10 @@ export abstract class GaleAgent<I extends z.ZodTypeAny, O extends z.ZodTypeAny> 
      * 
      * @param task the task to execute
      */
-    async run(task: AgentTaskRequest<I>): Promise<AgentTaskResponse<O>> {
+    async run(task: AgentTaskRequest<I>, options?: AgentRunOptions): Promise<AgentTaskResponse<O>> {
 
         const cid = task.correlationId || "no-cid";
+        this.options = options;
 
         this.logger?.compute(cid, `Running agent [${this.manifest.agentName} - ${this.manifest.taskId}] for task [${task.taskId}]`, "info");
 
@@ -95,4 +98,18 @@ export interface GaleOrchestratorAgentManifest extends GaleAgentManifest {
 
     resumeInputSchema: z.ZodTypeAny;
 
+}
+
+export interface AgentRunOptions {
+
+    playground?: Playground; 
+
+}
+
+export interface Playground {
+    /**
+     * Provides the possibility to override the prompt of the agent. 
+     * Parameters in the prompt (dynamic injection of content) should still be provided using the handlebars syntax (e.g., {{parameterName}}).
+     */
+    promptOverride?: string;
 }
