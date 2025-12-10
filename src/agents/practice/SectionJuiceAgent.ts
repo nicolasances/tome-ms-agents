@@ -4,6 +4,7 @@ import { GaleAgent, GaleAgentManifest } from "../../gale/GaleAgent";
 import { AgentTaskRequest, AgentTaskResponse } from "../../gale/model/AgentTask";
 import { TomeKnowledgeBase } from "../../tomekb/TomeKnowledgeBase";
 import Handlebars from "handlebars";
+import { Prompt } from "../../gale/util/Prompt";
 
 
 export class SectionJuiceAgent extends GaleAgent<typeof SectionJuiceAgent.inputSchema, typeof SectionJuiceAgent.outputSchema> {
@@ -62,31 +63,7 @@ export class SectionJuiceAgent extends GaleAgent<typeof SectionJuiceAgent.inputS
         // 1. Retrieve section content
         const sectionContent = await new TomeKnowledgeBase(this.config!).getSectionContent(inputData.topicCode, inputData.sectionCode, inputData.sectionIndex);
 
-        let prompt = `
-            You are a structured-analysis assistant. 
-            Your goal is to read the following passage and extract only the essential information. 
-            Your output must be concise, clear, and organized.
-
-            Extract the main things to remember.
-            Produce a single, concise list containing ONLY THE MOST IMPORTANT events, facts, characters, and dates.
-            Focus on the essential points someone should retain after reading the passage.
-
-            Constraints: 
-            - DO NOT INVENT ANYTHING. ONLY USE WHAT IS PROVIDED IN THE TEXT.
-
-            Content:
-            ${sectionContent}
-        `
-
-        // Possibility to override the prompt
-        if (this.options?.playground?.promptOverride) {
-            
-            logger.compute(cid, `Agent prompt is being overridden.`, "info");
-
-            const promptTemplate = this.options.playground.promptOverride;
-            const compiledTemplate = Handlebars.compile(promptTemplate);
-            prompt = compiledTemplate({sectionContent});
-        }
+        const prompt = await Prompt.namedPrompt(this.manifest.taskId, {sectionContent}, {promptTemplateOverride: this.options?.playground?.promptOverride});
 
         const response = await ai.generate({ prompt: prompt, output: { schema: SectionJuiceAgent.juiceSchema } });
 
