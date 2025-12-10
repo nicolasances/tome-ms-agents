@@ -1,6 +1,6 @@
 import { Request } from "express";
 import { ExecutionContext, TotoDelegate, UserContext } from "toto-api-controller";
-import { GaleAgent, GaleAgentManifest } from "./GaleAgent";
+import { AgentRunOptions, GaleAgent, GaleAgentManifest } from "./GaleAgent";
 import { AgentTaskRequest, AgentTaskResponse } from "./model/AgentTask";
 import { zodToJsonSchema } from 'zod-to-json-schema';
 
@@ -14,7 +14,6 @@ export class GaleAgentTaskDelegate implements TotoDelegate {
     async do(req: Request, userContext: UserContext, execContext: ExecutionContext): Promise<AgentTaskResponse<any>> {
 
         const logger = execContext.logger;
-        const cid = execContext.cid;
 
         this.agent.logger = logger;
         this.agent.config = execContext.config;
@@ -29,7 +28,12 @@ export class GaleAgentTaskDelegate implements TotoDelegate {
             parentTask: req.body.parentTask
         });
 
-        const response = await this.agent.run(agentTaskRequest);
+        // Prepare the options for running the agent, if any
+        const runOptions: AgentRunOptions = {};
+        
+        if (req.body.playground) runOptions.playground = req.body.playground;
+
+        const response = await this.agent.run(agentTaskRequest, runOptions);
 
         return response;
     }

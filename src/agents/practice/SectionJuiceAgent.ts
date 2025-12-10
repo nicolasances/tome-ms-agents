@@ -47,7 +47,7 @@ export class SectionJuiceAgent extends GaleAgent<typeof SectionJuiceAgent.inputS
 
         const cid = task.correlationId || "no-cid";
         const logger = this.logger!;
-        const inputData = task.taskInputData!;
+        const inputData = task.taskInputData! as z.infer<typeof SectionJuiceAgent.inputSchema>;
 
         const ai = genkit({
             plugins: [
@@ -61,21 +61,8 @@ export class SectionJuiceAgent extends GaleAgent<typeof SectionJuiceAgent.inputS
         // 1. Retrieve section content
         const sectionContent = await new TomeKnowledgeBase(this.config!).getSectionContent(inputData.topicCode, inputData.sectionCode, inputData.sectionIndex);
 
-        const prompt = `
-            You are a structured-analysis assistant. 
-            Your goal is to read the following passage and extract only the essential information. 
-            Your output must be concise, clear, and organized.
-
-            Extract the main things to remember.
-            Produce a single, concise list containing ONLY THE MOST IMPORTANT events, facts, characters, and dates.
-            Focus on the essential points someone should retain after reading the passage.
-
-            Constraints: 
-            - DO NOT INVENT ANYTHING. ONLY USE WHAT IS PROVIDED IN THE TEXT.
-
-            Content:
-            ${sectionContent}
-        `
+        // 2. Prompt
+        const prompt = await this.prompt({ sectionContent });
 
         const response = await ai.generate({ prompt: prompt, output: { schema: SectionJuiceAgent.juiceSchema } });
 

@@ -2,12 +2,15 @@ import { ExecutionContext, Logger, TotoControllerConfig } from "toto-api-control
 import { AgentTaskRequest, AgentTaskResponse, AgentTaskOrchestratorResponse } from "./model/AgentTask";
 import { z } from "genkit";
 import { ValidationError } from "toto-api-controller";
+import { Prompt } from "./util/Prompt";
 
 export abstract class GaleAgent<I extends z.ZodTypeAny, O extends z.ZodTypeAny> {
 
     logger: Logger | undefined;
     config: TotoControllerConfig | undefined;
     execContext: ExecutionContext | undefined;
+
+    protected options?: AgentRunOptions;
 
     abstract manifest: GaleAgentManifest;
 
@@ -21,9 +24,10 @@ export abstract class GaleAgent<I extends z.ZodTypeAny, O extends z.ZodTypeAny> 
      * 
      * @param task the task to execute
      */
-    async run(task: AgentTaskRequest<I>): Promise<AgentTaskResponse<O>> {
+    async run(task: AgentTaskRequest<I>, options?: AgentRunOptions): Promise<AgentTaskResponse<O>> {
 
         const cid = task.correlationId || "no-cid";
+        this.options = options;
 
         this.logger?.compute(cid, `Running agent [${this.manifest.agentName} - ${this.manifest.taskId}] for task [${task.taskId}]`, "info");
 
@@ -69,6 +73,19 @@ export abstract class GaleAgent<I extends z.ZodTypeAny, O extends z.ZodTypeAny> 
         }
     }
 
+    /**
+     * Retrieves the prompt for the agent, filled with the provided input.
+     * 
+     * This method handles automatically any override of the prompt template coming from, for example, the playground.
+     * 
+     * @param input the input parameters to fill the prompt template. Input should be an object with key-value pairs matching the template parameters. (e.g. if the template contains {{parameterName}}, the input should contain { parameterName: "value" } )
+     */
+    async prompt(input: any): Promise<string> {
+
+        return Prompt.namedPrompt(this.manifest.taskId, input, { promptTemplateOverride: this.options?.playground?.promptOverride });
+
+    }
+
     abstract executeTask(task: AgentTaskRequest<I>): Promise<AgentTaskResponse<O>>;
 
 }
@@ -95,4 +112,18 @@ export interface GaleOrchestratorAgentManifest extends GaleAgentManifest {
 
     resumeInputSchema: z.ZodTypeAny;
 
+}
+
+export interface AgentRunOptions {
+
+    playground?: Playground; 
+
+}
+
+export interface Playground {
+    /**
+     * Provides the possibility to override the prompt of the agent. 
+     * Parameters in the prompt (dynamic injection of content) should still be provided using the handlebars syntax (e.g., {{parameterName}}).
+     */
+    promptOverride?: string;
 }
