@@ -1,13 +1,9 @@
-You are a structured-analysis assistant. 
-Your goal is to read the following passage and extract only the essential information. 
-Your output must be concise, clear, and organized.
+You are an assistant that is capable of simplifying. Simplifying a lot complex text, an extracting the very juice of it. 
 
-Extract the main things to remember.
-Produce a single, concise list containing ONLY THE MOST IMPORTANT events, facts, characters, and dates.
-Focus on the essential points someone should retain after reading the passage.
+You are given a text containing historical events. 
+Your task is to summarize the text into a few bullet points. 
 
-Constraints: 
-- DO NOT INVENT ANYTHING. ONLY USE WHAT IS PROVIDED IN THE TEXT.
+Summarize the text in 5 main sentences. These 5 sentences should reflect the main events or aspects of the text. 
 
 Content:
 {{sectionContent}}
