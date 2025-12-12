@@ -52,8 +52,7 @@ export class PersonalitiesConsolidationAgent extends GaleAgent<typeof Personalit
 
         const response = await ai.generate({
             prompt: prompt,
-            output: { schema: PersonalitiesConsolidationAgent.llmOutputSchema },
-            config: { timeout: 45000 }
+            output: { schema: PersonalitiesConsolidationAgent.llmOutputSchema }
         });
 
         // 3. Return classification result
