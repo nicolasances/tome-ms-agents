@@ -46,22 +46,9 @@ export class PersonalitiesConsolidationAgent extends GaleAgent<typeof Personalit
 
         logger.compute(cid, `Consolidating genealogy for topic [${inputData.topicId} - ${inputData.topicCode}]`, "info");
 
-        const prompt = `
-            You are an Agent specialized in the understanding of historical information and specifically historical personalities.
-            You have historical knowledge that you can use to better understand historical figures.
-
-            In the following content, you will find a list of people mentioned in the different sections of a blog post with a description of who they are. The data has a high chance of containing duplicates or overlapping information.
-
-            Your task is to consolidate this information by removing duplicates and merging overlapping descriptions. 
-            Make sure that each personality in the consolidated list is unique and contains the most comprehensive description possible.
-
-            ----
-            List of people descriptions:
-            ${JSON.stringify(task.taskInputData!.peopleDescriptions, null, 2)}
-
-            ----
-            Generate the consolidated list of personalities:
-        `
+        const prompt = await this.prompt({ 
+            peopleDescriptions: JSON.stringify(task.taskInputData!.peopleDescriptions, null, 2)
+        });
 
         const response = await ai.generate({ prompt: prompt, output: { schema: PersonalitiesConsolidationAgent.llmOutputSchema } });
 

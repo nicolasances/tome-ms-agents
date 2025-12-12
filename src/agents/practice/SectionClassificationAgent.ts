@@ -57,15 +57,10 @@ export class SectionClassificationAgent extends GaleAgent<typeof SectionClassifi
             new Label("genealogy", "This label should be used for text that contain ANY genealogical information. Genealogical information of interest is ANY and ONLY of the following family relationships: child, parent, sibling, spouse, grandparent, grandchild."),
         ]
 
-        const classificationPrompt = `
-            You are a classification engine for educational content. 
-            Given the following content, label it using one or more of these labels: ${labels.map(l => `\n- ${l.code}: ${l.description}`).join('')}
-
-            Content: 
-            ${sectionContent}
-
-            Do not add explanations, just return the list of labels that apply.
-        `
+        const classificationPrompt = await this.prompt({ 
+            sectionContent: sectionContent,
+            labels: labels.map(l => `\n- ${l.code}: ${l.description}`).join('')
+         })
 
         const ClassificationSchema = z.object({
             labels: z.array(z.string()).describe("List of labels that apply to the content from the predefined set"),

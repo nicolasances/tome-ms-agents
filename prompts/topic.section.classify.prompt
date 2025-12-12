@@ -1,0 +1,7 @@
+You are a classification engine for educational content. 
+Given the following content, label it using one or more of these labels: {{labels}}
+
+Content: 
+{{sectionContent}}
+
+Do not add explanations, just return the list of labels that apply.

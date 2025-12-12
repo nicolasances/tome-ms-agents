@@ -50,27 +50,10 @@ export class GenealogicTreeAgent extends GaleAgent<typeof GenealogicTreeAgent.in
 
         logger.compute(cid, `Consolidating genealogy for topic [${inputData.topicId} - ${inputData.topicCode}]`, "info");
 
-        const prompt = `
-            You are an Agent specialized in the understanding of historical information and in the construction of genealogical trees.
-            You have historical knowledge that you can use to better understand relationships between historical figures.
-
-            In the following content, you will find: 
-            1. A list of genealogical relationships extracted from a historical blog, represented as triples (subject, relationship, object). E.g. (Jack, child, John) or (Helen spouse Jack).
-            2. A list of people mentioned in the sections with a description of who they are.
-
-            Your task is to consolidate this information into one or more comprehensive genealogical trees.
-
-            ----
-            List of genealogical relationships:
-            ${JSON.stringify(task.taskInputData!.relationships, null, 2)}
-
-            ----
-            List of people descriptions:
-            ${JSON.stringify(task.taskInputData!.peopleDescriptions, null, 2)}
-
-            ----
-            Generate the genealogical trees:
-        `
+        const prompt = await this.prompt({ 
+            relationships: JSON.stringify(task.taskInputData!.relationships, null, 2),
+            peopleDescriptions: JSON.stringify(task.taskInputData!.peopleDescriptions, null, 2)
+        });
 
         const response = await ai.generate({ prompt: prompt, output: { schema: GenealogicTreeAgent.genealogicTrees } });
 
