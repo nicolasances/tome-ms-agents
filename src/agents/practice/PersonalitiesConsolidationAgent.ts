@@ -46,11 +46,15 @@ export class PersonalitiesConsolidationAgent extends GaleAgent<typeof Personalit
 
         logger.compute(cid, `Consolidating genealogy for topic [${inputData.topicId} - ${inputData.topicCode}]`, "info");
 
-        const prompt = await this.prompt({ 
+        const prompt = await this.prompt({
             peopleDescriptions: JSON.stringify(task.taskInputData!.peopleDescriptions, null, 2)
         });
 
-        const response = await ai.generate({ prompt: prompt, output: { schema: PersonalitiesConsolidationAgent.llmOutputSchema } });
+        const response = await ai.generate({
+            prompt: prompt,
+            output: { schema: PersonalitiesConsolidationAgent.llmOutputSchema },
+            config: { timeout: 45000 }
+        });
 
         // 3. Return classification result
         return new AgentTaskResponse("completed", cid, {
