@@ -3,6 +3,7 @@ import { ExecutionContext, TotoDelegate, UserContext } from "toto-api-controller
 import { AgentRunOptions, GaleAgent, GaleAgentManifest } from "./GaleAgent";
 import { AgentTaskRequest, AgentTaskResponse } from "./model/AgentTask";
 import { zodToJsonSchema } from 'zod-to-json-schema';
+import { Prompt } from "./util/Prompt";
 
 /**
  * Delegate to handle task execution requests for a Gale Agent.
@@ -49,7 +50,14 @@ export class GaleAgentInfoDelegate implements TotoDelegate {
     constructor(private agent: GaleAgent<any, any>) { }
 
     async do(req: Request, userContext: UserContext, execContext: ExecutionContext): Promise<AgentInfo> {
-        return AgentInfo.fromAgentManifest(this.agent.manifest);
+
+        // Get the agent info from the manifest
+        const agentInfo = AgentInfo.fromAgentManifest(this.agent.manifest);
+
+        // Find the prompt of the agent, if any
+        agentInfo.promptTemplate = await Prompt.getPromptTemplate(this.agent.manifest) || undefined;
+
+        return agentInfo;
     }
 
 }
@@ -61,6 +69,7 @@ export class AgentInfo {
     taskId: string = "";
     inputSchema: any;
     outputSchema: any;
+    promptTemplate?: string;
 
     static fromAgentManifest(manifest: GaleAgentManifest): AgentInfo {
 

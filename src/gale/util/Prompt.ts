@@ -1,6 +1,7 @@
 import * as fs from 'fs/promises';
 import * as path from 'path';
 import Handlebars, { template } from 'handlebars';
+import { GaleAgentManifest } from '../GaleAgent';
 
 /**
  * This class wraps a prompt template for agents. 
@@ -47,6 +48,27 @@ export class Prompt {
     static render(template: string, input: any): string {
         const compiled = Handlebars.compile(template);
         return compiled(input);
+    }
+
+    /**
+     * Retrieves the prompt template associated with the given agent manifest.
+     * 
+     * @param manifest the agent manifest containing the taskId
+     * @returns the prompt template string
+     */
+    static async getPromptTemplate(manifest: GaleAgentManifest): Promise<string | null> {
+
+        const promptPath = path.join(process.cwd(), 'prompts', `${manifest.taskId}.prompt`);
+        
+        try {
+
+            const templateContent = await fs.readFile(promptPath, 'utf-8');
+
+            return templateContent;
+
+        } catch (error) {
+            return null;
+        }
     }
 
 }
