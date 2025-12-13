@@ -2,12 +2,10 @@ import { z } from "genkit";
 import { GaleAgent, GaleAgentManifest } from "../../gale/GaleAgent";
 import { AgentTaskRequest, AgentTaskResponse } from "../../gale/model/AgentTask";
 import { TomeKnowledgeBase } from "../../tomekb/TomeKnowledgeBase";
-import { TimelineSchema } from "../../model/TimelineSchema";
 
+export class SectionJuiceAgent extends GaleAgent<typeof SectionJuiceAgent.inputSchema, typeof SectionJuiceAgent.outputSchema> {
 
-export class SectionTimelineAgent extends GaleAgent<typeof SectionTimelineAgent.inputSchema, typeof SectionTimelineAgent.outputSchema> {
-
-    static taskId: string = "topic.section.timeline";
+    static taskId: string = "topic.section.juice";
 
     static inputSchema = z.object({
         topicId: z.string().describe("Unique identifier (database ID) of the Tome Topic to build practice for."),
@@ -16,28 +14,39 @@ export class SectionTimelineAgent extends GaleAgent<typeof SectionTimelineAgent.
         sectionIndex: z.number().describe("Index of the section within the topic."),
     });
 
+    static juiceSchema = z.array(
+        z.object({
+            toRemember: z.string().describe("An important aspect, fact, event to remember."),
+            date: z.object({
+                year: z.number().optional().describe("Year of the timeline event as an integer."),
+                month: z.number().optional().describe("Month of the timeline event as an integer (1-12)."),
+                day: z.number().optional().describe("Day of the month of the timeline event as an integer (1-31)."),
+            }).optional().describe("Date associated with the event, aspect or fact to remember, if any date is available for this event in the text."),
+        })
+    )
+
     static outputSchema = z.object({
         topicId: z.string().describe("Unique identifier (database ID) of the Tome Topic."),
         topicCode: z.string().describe("Unique code of the Tome Topic."),
         sectionCode: z.string().describe("Code of the section that was classified."),
         sectionIndex: z.number().describe("Index of the section within the topic."),
-        timeline: TimelineSchema.describe("Timeline events extracted from the section content."),
+        juice: SectionJuiceAgent.juiceSchema.describe("Timeline events extracted from the section content."),
     });
 
     manifest: GaleAgentManifest = {
-        agentName: "Tome Section Timeline Extractor",
-        taskId: SectionTimelineAgent.taskId,
-        inputSchema: SectionTimelineAgent.inputSchema,
-        outputSchema: SectionTimelineAgent.outputSchema,
-        description: "Agent for extracting timeline information in sections of a Tome Topic. This agent analyzes the content of a section and determines if it contains timeline details such as dates and descriptions of events.", 
+        agentName: "Tome Section Juice Extractor",
+        taskId: SectionJuiceAgent.taskId,
+        inputSchema: SectionJuiceAgent.inputSchema,
+        outputSchema: SectionJuiceAgent.outputSchema,
+        description: "Agent for extracting the most important information from sections of a Tome Topic. This agent analyzes the content of a section and summarizes the key events, facts, characters, and dates that are essential to remember.", 
         model: "anthropic.claude-3.7-sonnet",
     };
 
-    async executeTask(task: AgentTaskRequest<typeof SectionTimelineAgent.inputSchema>): Promise<AgentTaskResponse<typeof SectionTimelineAgent.outputSchema>> {
+    async executeTask(task: AgentTaskRequest<typeof SectionJuiceAgent.inputSchema>): Promise<AgentTaskResponse<typeof SectionJuiceAgent.outputSchema>> {
 
         const cid = task.correlationId || "no-cid";
         const logger = this.logger!;
-        const inputData = task.taskInputData!;
+        const inputData = task.taskInputData! as z.infer<typeof SectionJuiceAgent.inputSchema>;
 
         const ai = this.ai();
 
@@ -46,9 +55,10 @@ export class SectionTimelineAgent extends GaleAgent<typeof SectionTimelineAgent.
         // 1. Retrieve section content
         const sectionContent = await new TomeKnowledgeBase(this.config!).getSectionContent(inputData.topicCode, inputData.sectionCode, inputData.sectionIndex);
 
-        const prompt = await this.prompt({ sectionContent: sectionContent });
-        
-        const response = await ai.generate({ prompt: prompt, outputSchema: TimelineSchema });
+        // 2. Prompt
+        const prompt = await this.prompt({ sectionContent });
+
+        const response = await ai.generate({ prompt: prompt, outputSchema: SectionJuiceAgent.juiceSchema });
 
         // 3. Return classification result
         return new AgentTaskResponse("completed", cid, {
@@ -56,7 +66,7 @@ export class SectionTimelineAgent extends GaleAgent<typeof SectionTimelineAgent.
             topicCode: inputData.topicCode,
             sectionCode: inputData.sectionCode,
             sectionIndex: inputData.sectionIndex,
-            timeline: response.output!
+            juice: response.output!
         });
     }
 }

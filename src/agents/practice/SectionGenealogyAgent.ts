@@ -1,5 +1,4 @@
-import { genkit, z } from "genkit";
-import { anthropicClaude37SonnetV1, awsBedrock } from "genkitx-aws-bedrock";
+import { z } from "genkit";
 import { GaleAgent, GaleAgentManifest } from "../../gale/GaleAgent";
 import { AgentTaskRequest, AgentTaskResponse } from "../../gale/model/AgentTask";
 import { TomeKnowledgeBase } from "../../tomekb/TomeKnowledgeBase";
@@ -36,7 +35,8 @@ export class SectionGenealogyAgent extends GaleAgent<typeof SectionGenealogyAgen
         taskId: SectionGenealogyAgent.taskId,
         inputSchema: SectionGenealogyAgent.inputSchema,
         outputSchema: SectionGenealogyAgent.outputSchema,
-        description: "Agent for detecting genealogical information in sections of a Tome Topic. This agent analyzes the content of a section and determines if it contains genealogical details such as family relationships, lineages, or ancestry information."
+        description: "Agent for detecting genealogical information in sections of a Tome Topic. This agent analyzes the content of a section and determines if it contains genealogical details such as family relationships, lineages, or ancestry information.", 
+        model: "anthropic.claude-3.7-sonnet",
     };
 
     async executeTask(task: AgentTaskRequest<typeof SectionGenealogyAgent.inputSchema>): Promise<AgentTaskResponse<typeof SectionGenealogyAgent.outputSchema>> {
@@ -45,38 +45,16 @@ export class SectionGenealogyAgent extends GaleAgent<typeof SectionGenealogyAgen
         const logger = this.logger!;
         const inputData = task.taskInputData!;
 
-        const ai = genkit({
-            plugins: [
-                awsBedrock({ region: "eu-north-1" }),
-            ],
-            model: anthropicClaude37SonnetV1("eu"),
-        });
+        const ai = this.ai();
 
         logger.compute(cid, `Task [${task.taskId}] Detecting genealogy in section [${inputData.sectionCode}] for topic [${inputData.topicId} - ${inputData.topicCode}]`, "info");
 
         // 1. Retrieve section content
         const sectionContent = await new TomeKnowledgeBase(this.config!).getSectionContent(inputData.topicCode, inputData.sectionCode, inputData.sectionIndex);
 
-        const prompt = `
-            You are an Agent specialized in extracting genealogical information from historical texts.
+        const prompt = await this.prompt({ sectionContent: sectionContent });
 
-            Given the following content, identify and extract the following: 
-             - genealogical relationships in the form of triples: (subject, relationship, object). The subject and object are names of individuals, and the relationship describes their familial connection (e.g., parent, child, sibling, spouse).
-             - list of people mentioned in the content along with a brief description of who they are to help identify them in history univoquely.
-
-            Rules: 
-            - Relationships MUST BE EXPLICITLY stated in the content. DO NOT infer relationships that are not clearly mentioned.
-            - ALLOWED family connections are ONLY: **child, parent, sibling, spouse**.
-            - DISCARD any information that does not fit into these relationships. DO NOT add relationship types that are not in the allowed list.
-            - DISCARD any relationship where either the subject or the object is not a person's name. Subjects and objects MUST be a person's name (first name, last name, or full name).
-            - DISCARD any person in the list of people that is does not have an explicit name (first name, last name, or full name).
-            - Make sure to avoid duplicates and symmetric entries (e.g., if you have (Alice, parent, Bob), do not include (Bob, child, Alice)).
-
-            Content:
-            ${sectionContent}
-        `
-
-        const response = await ai.generate({ prompt: prompt, output: { schema: SectionGenealogyAgent.responseSchema } });
+        const response = await ai.generate({ prompt: prompt, outputSchema: SectionGenealogyAgent.responseSchema });
 
         // 3. Return classification result
         return new AgentTaskResponse("completed", cid, {

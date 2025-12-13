@@ -5,7 +5,7 @@ import { GaleOrchestrator } from "../gale/orchestrator/GaleOrchestrator";
 import { AgenticFlow, AgentNode, BranchNode, GroupNode } from "../gale/model/AgenticFlow";
 import { GenealogicTreeAgent } from "../agents/practice/GenealogicTreeAgent";
 import { PersonalitiesConsolidationAgent } from "../agents/practice/PersonalitiesConsolidationAgent";
-import { classificationAgents, sectionGenealogyAgents, sectionTimelineAgents } from "./providers/PracticeBuildAgentsProvider";
+import { classificationAgents, sectionGenealogyAgents, sectionJuiceAgents, sectionTimelineAgents } from "./providers/PracticeBuildAgentsProvider";
 import { SectionGenealogyAgent } from "../agents/practice/SectionGenealogyAgent";
 
 /**
@@ -80,6 +80,13 @@ export class PracticeBuilderOrchestratorAgent extends GaleOrchestratorAgent<type
                         branch: new GroupNode({
                             groupId: "sections-timeline-group",
                             agentsProvider: sectionTimelineAgents, 
+                        })
+                    }, 
+                    {
+                        branchId: "section-juice-branch",
+                        branch: new GroupNode({
+                            groupId: "sections-juice-group",
+                            agentsProvider: sectionJuiceAgents, 
                         })
                     }
                 ]

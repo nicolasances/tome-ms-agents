@@ -1,5 +1,4 @@
-import { genkit, z } from "genkit";
-import { anthropicClaude37SonnetV1, awsBedrock } from "genkitx-aws-bedrock";
+import { z } from "genkit";
 import { GaleAgent, GaleAgentManifest } from "../../gale/GaleAgent";
 import { AgentTaskRequest, AgentTaskResponse } from "../../gale/model/AgentTask";
 import { GenealogicTreeSchema, RelationshipSchema } from "../../model/GenealogicTreeSchema";
@@ -32,7 +31,8 @@ export class GenealogicTreeAgent extends GaleAgent<typeof GenealogicTreeAgent.in
         taskId: GenealogicTreeAgent.taskId,
         inputSchema: GenealogicTreeAgent.inputSchema,
         outputSchema: GenealogicTreeAgent.outputSchema,
-        description: "Agent for consolidating genealogical information of a Tome Topic. This agent consolidates genealogical data from multiple sections into a comprehensive overview and a set of complete genealogical trees."
+        description: "Agent for consolidating genealogical information of a Tome Topic. This agent consolidates genealogical data from multiple sections into a comprehensive overview and a set of complete genealogical trees.", 
+        model: "anthropic.claude-3.7-sonnet",
     };
 
     async executeTask(task: AgentTaskRequest<typeof GenealogicTreeAgent.inputSchema>): Promise<AgentTaskResponse<typeof GenealogicTreeAgent.outputSchema>> {
@@ -41,38 +41,16 @@ export class GenealogicTreeAgent extends GaleAgent<typeof GenealogicTreeAgent.in
         const logger = this.logger!;
         const inputData = task.taskInputData!;
 
-        const ai = genkit({
-            plugins: [
-                awsBedrock({ region: "eu-north-1" }),
-            ],
-            model: anthropicClaude37SonnetV1("eu"),
-        });
+        const ai = this.ai();
 
         logger.compute(cid, `Consolidating genealogy for topic [${inputData.topicId} - ${inputData.topicCode}]`, "info");
 
-        const prompt = `
-            You are an Agent specialized in the understanding of historical information and in the construction of genealogical trees.
-            You have historical knowledge that you can use to better understand relationships between historical figures.
+        const prompt = await this.prompt({ 
+            relationships: JSON.stringify(task.taskInputData!.relationships, null, 2),
+            peopleDescriptions: JSON.stringify(task.taskInputData!.peopleDescriptions, null, 2)
+        });
 
-            In the following content, you will find: 
-            1. A list of genealogical relationships extracted from a historical blog, represented as triples (subject, relationship, object). E.g. (Jack, child, John) or (Helen spouse Jack).
-            2. A list of people mentioned in the sections with a description of who they are.
-
-            Your task is to consolidate this information into one or more comprehensive genealogical trees.
-
-            ----
-            List of genealogical relationships:
-            ${JSON.stringify(task.taskInputData!.relationships, null, 2)}
-
-            ----
-            List of people descriptions:
-            ${JSON.stringify(task.taskInputData!.peopleDescriptions, null, 2)}
-
-            ----
-            Generate the genealogical trees:
-        `
-
-        const response = await ai.generate({ prompt: prompt, output: { schema: GenealogicTreeAgent.genealogicTrees } });
+        const response = await ai.generate({ prompt: prompt, outputSchema: GenealogicTreeAgent.genealogicTrees });
 
         // 3. Return classification result
         return new AgentTaskResponse("completed", cid, {

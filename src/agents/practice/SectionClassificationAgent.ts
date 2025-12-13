@@ -1,7 +1,6 @@
 import { GaleAgent, GaleAgentManifest } from "../../gale/GaleAgent";
 import { AgentTaskRequest, AgentTaskResponse } from "../../gale/model/AgentTask";
-import { genkit, z } from 'genkit';
-import { awsBedrock, anthropicClaude37SonnetV1 } from "genkitx-aws-bedrock";
+import { z } from 'genkit';
 import { TomeKnowledgeBase } from "../../tomekb/TomeKnowledgeBase";
 import { LabelSchema } from "../../model/LabelSchema";
 
@@ -29,7 +28,8 @@ export class SectionClassificationAgent extends GaleAgent<typeof SectionClassifi
         taskId: SectionClassificationAgent.taskId,
         inputSchema: SectionClassificationAgent.inputSchema,
         outputSchema: SectionClassificationAgent.outputSchema,
-        description: "Agent for labelling sections of a Tome Topic. This agent analyzes the content of a section and assigns one or more predefined labels based on the content's characteristics."
+        description: "Agent for labelling sections of a Tome Topic. This agent analyzes the content of a section and assigns one or more predefined labels based on the content's characteristics.", 
+        model: "amazon.nova-lite",
     };
 
     async executeTask(task: AgentTaskRequest<typeof SectionClassificationAgent.inputSchema>): Promise<AgentTaskResponse<typeof SectionClassificationAgent.outputSchema>> {
@@ -38,12 +38,7 @@ export class SectionClassificationAgent extends GaleAgent<typeof SectionClassifi
         const logger = this.logger!;
         const inputData = task.taskInputData!;
 
-        const ai = genkit({
-            plugins: [
-                awsBedrock({ region: "eu-north-1" }),
-            ],
-            model: anthropicClaude37SonnetV1("eu"),
-        });
+        const ai = this.ai();
 
         logger.compute(cid, `Classifying section [${inputData.sectionCode}] for topic [${inputData.topicId} - ${inputData.topicCode}]`, "info");
 
@@ -51,27 +46,13 @@ export class SectionClassificationAgent extends GaleAgent<typeof SectionClassifi
         const sectionContent = await new TomeKnowledgeBase(this.config!).getSectionContent(inputData.topicCode, inputData.sectionCode, inputData.sectionIndex);
 
         // 2. Use an LLM to classify the section content
-        const labels: Label[] = [
-            new Label("history", "This label can be only used for text that describes historical events, figures, or periods. Use this label when the content focuses mainly on a historical subject, event or era. "),
-            new Label("timeline", "This label is appropriate for text that contain events that have a chronological ordering. Use this label when the content contains sequences of events where chronological order can be determined."),
-            new Label("genealogy", "This label should be used for text that contain ANY genealogical information. Genealogical information of interest is ANY and ONLY of the following family relationships: child, parent, sibling, spouse, grandparent, grandchild."),
-        ]
-
-        const classificationPrompt = `
-            You are a classification engine for educational content. 
-            Given the following content, label it using one or more of these labels: ${labels.map(l => `\n- ${l.code}: ${l.description}`).join('')}
-
-            Content: 
-            ${sectionContent}
-
-            Do not add explanations, just return the list of labels that apply.
-        `
+        const classificationPrompt = await this.prompt({ sectionContent });
 
         const ClassificationSchema = z.object({
             labels: z.array(z.string()).describe("List of labels that apply to the content from the predefined set"),
         })
 
-        const response = await ai.generate({ prompt: classificationPrompt, output: { schema: ClassificationSchema } });
+        const response = await ai.generate({ prompt: classificationPrompt, outputSchema: ClassificationSchema });
 
         // 3. Return classification result
         return new AgentTaskResponse("completed", cid, {

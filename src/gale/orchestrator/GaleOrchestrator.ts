@@ -23,7 +23,7 @@ export class GaleOrchestrator {
 
         if (root.getType() == "group") return this.processGroup(root as GroupNode, input);
         else if (root.getType() == 'branch') return this.processBranch(root as BranchNode, input);
-        else if (root.getType() == 'agent') return this.processAgent(root as AgentNode, input);
+        else if (root.getType() == 'agent') return this.processAgent(root as AgentNode<any>, input);
 
         throw new TotoRuntimeError(500, `Root node type [${root.getType()}] not supported in Gale Orchestrator.`);
     }
@@ -50,7 +50,7 @@ export class GaleOrchestrator {
         if (nextNode) {
             if (nextNode.getType() == "group") return this.processGroup(nextNode as GroupNode, input);
             else if (nextNode.getType() == 'branch') return this.processBranch(nextNode as BranchNode, input);
-            else if (nextNode.getType() == 'agent') return this.processAgent(nextNode as AgentNode, input);
+            else if (nextNode.getType() == 'agent') return this.processAgent(nextNode as AgentNode<any>, input);
             else throw new TotoRuntimeError(500, `Next node type [${nextNode.getType()}] not supported in Gale Orchestrator.`);
         }
 
@@ -64,7 +64,7 @@ export class GaleOrchestrator {
      * @param agent the agent to be processed
      * @param input the input that the orchestrator received
      */
-    private async processAgent(agent: AgentNode, input: any): Promise<AgentTaskOrchestratorResponse<any>> {
+    private async processAgent(agent: AgentNode<any>, input: any): Promise<AgentTaskOrchestratorResponse<any>> {
 
         // Apply input mapper if provided, otherwise use the agent's taskInputData
         const taskInputData = agent.taskInputMapper ? agent.taskInputMapper(input) : agent.taskInputData;
@@ -124,7 +124,7 @@ export class GaleOrchestrator {
             let response: AgentTaskOrchestratorResponse<any>;
 
             if (branchType == 'group') response = await this.processGroup(branch.branch as GroupNode, input);
-            else if (branchType == 'agent') response = await this.processAgent(branch.branch as AgentNode, input);
+            else if (branchType == 'agent') response = await this.processAgent(branch.branch as AgentNode<any>, input);
             else throw new ValidationError(500, `Branch node type [${branchType}] not supported as one of the branches of a Branch Node.`);
 
             if (!response || !response.subtasks || response.subtasks.length === 0) throw new ValidationError(500, `No subtasks generated for branch [${branch.branchId}].`);

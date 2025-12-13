@@ -7,6 +7,7 @@ import { ExecutionContext, TotoRuntimeError } from "toto-api-controller";
 import { SectionClassificationAgent } from "../../agents/practice/SectionClassificationAgent";
 import { SectionGenealogyAgent } from "../../agents/practice/SectionGenealogyAgent";
 import { SectionTimelineAgent } from "../../agents/practice/SectionTimelineAgent";
+import { SectionJuiceAgent } from "../../agents/practice/SectionJuiceAgent";
 
 /**
  * Provides agents for the classification group in the practice build orchestrator.
@@ -91,6 +92,28 @@ export async function sectionTimelineAgents(input: z.infer<typeof PracticeBuilde
                 sectionCode: section.sectionCode,
                 sectionIndex: section.sectionIndex,
             } as z.infer<typeof SectionTimelineAgent.inputSchema>,
+        })
+    );
+
+}
+
+/**
+ * Generates the agents responsible for extracting juice information from sections.
+ * Generates one agent per section.
+ */
+export async function sectionJuiceAgents(input: z.infer<typeof PracticeBuilderOrchestratorAgent.resumeInputSchema>): Promise<AgentNode<typeof SectionJuiceAgent.inputSchema>[]> {
+
+    const inputData = input.childrenOutputs as z.infer<typeof SectionClassificationAgent.outputSchema>[];
+
+    return inputData.map(section =>
+        new AgentNode<typeof SectionJuiceAgent.inputSchema>({
+            taskId: SectionJuiceAgent.taskId,
+            taskInputData: {
+                topicId: section.topicId,
+                topicCode: section.topicCode,
+                sectionCode: section.sectionCode,
+                sectionIndex: section.sectionIndex,
+            } as z.infer<typeof SectionJuiceAgent.inputSchema>,
         })
     );
 

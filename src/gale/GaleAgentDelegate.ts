@@ -1,8 +1,10 @@
 import { Request } from "express";
 import { ExecutionContext, TotoDelegate, UserContext } from "toto-api-controller";
-import { GaleAgent, GaleAgentManifest } from "./GaleAgent";
+import { AgentRunOptions, GaleAgent, GaleAgentManifest } from "./GaleAgent";
 import { AgentTaskRequest, AgentTaskResponse } from "./model/AgentTask";
 import { zodToJsonSchema } from 'zod-to-json-schema';
+import { Prompt } from "./util/Prompt";
+import { GaleKit, ModelId } from "./gentools/GaleKit";
 
 /**
  * Delegate to handle task execution requests for a Gale Agent.
@@ -14,7 +16,6 @@ export class GaleAgentTaskDelegate implements TotoDelegate {
     async do(req: Request, userContext: UserContext, execContext: ExecutionContext): Promise<AgentTaskResponse<any>> {
 
         const logger = execContext.logger;
-        const cid = execContext.cid;
 
         this.agent.logger = logger;
         this.agent.config = execContext.config;
@@ -29,7 +30,12 @@ export class GaleAgentTaskDelegate implements TotoDelegate {
             parentTask: req.body.parentTask
         });
 
-        const response = await this.agent.run(agentTaskRequest);
+        // Prepare the options for running the agent, if any
+        const runOptions: AgentRunOptions = {};
+        
+        if (req.body.playground) runOptions.playground = req.body.playground;
+
+        const response = await this.agent.run(agentTaskRequest, runOptions);
 
         return response;
     }
@@ -45,7 +51,14 @@ export class GaleAgentInfoDelegate implements TotoDelegate {
     constructor(private agent: GaleAgent<any, any>) { }
 
     async do(req: Request, userContext: UserContext, execContext: ExecutionContext): Promise<AgentInfo> {
-        return AgentInfo.fromAgentManifest(this.agent.manifest);
+
+        // Get the agent info from the manifest
+        const agentInfo = AgentInfo.fromAgentManifest(this.agent.manifest);
+
+        // Find the prompt of the agent, if any
+        agentInfo.promptTemplate = await Prompt.getPromptTemplate(this.agent.manifest) || undefined;
+
+        return agentInfo;
     }
 
 }
@@ -57,6 +70,9 @@ export class AgentInfo {
     taskId: string = "";
     inputSchema: any;
     outputSchema: any;
+    promptTemplate?: string;
+    allowedModels: ModelId[] = GaleKit.getSupportedModels();
+    model: ModelId = "anthropic.claude-3.7-sonnet";
 
     static fromAgentManifest(manifest: GaleAgentManifest): AgentInfo {
 
@@ -66,6 +82,8 @@ export class AgentInfo {
         info.taskId = manifest.taskId;
         info.inputSchema = zodToJsonSchema(manifest.inputSchema);
         info.outputSchema = zodToJsonSchema(manifest.outputSchema);
+        info.allowedModels = GaleKit.getSupportedModels();
+        info.model = manifest.model;
 
         return info;
     }
