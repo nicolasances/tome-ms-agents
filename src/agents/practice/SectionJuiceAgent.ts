@@ -3,6 +3,7 @@ import { anthropicClaude37SonnetV1, awsBedrock } from "genkitx-aws-bedrock";
 import { GaleAgent, GaleAgentManifest } from "../../gale/GaleAgent";
 import { AgentTaskRequest, AgentTaskResponse } from "../../gale/model/AgentTask";
 import { TomeKnowledgeBase } from "../../tomekb/TomeKnowledgeBase";
+import { GaleKit } from "../../gale/gentools/GaleKit";
 
 
 export class SectionJuiceAgent extends GaleAgent<typeof SectionJuiceAgent.inputSchema, typeof SectionJuiceAgent.outputSchema> {
@@ -49,12 +50,7 @@ export class SectionJuiceAgent extends GaleAgent<typeof SectionJuiceAgent.inputS
         const logger = this.logger!;
         const inputData = task.taskInputData! as z.infer<typeof SectionJuiceAgent.inputSchema>;
 
-        const ai = genkit({
-            plugins: [
-                awsBedrock({ region: "eu-north-1" }),
-            ],
-            model: anthropicClaude37SonnetV1("eu"),
-        });
+        const ai = GaleKit.gale({ model: "amazon.nova-lite", host: { region: "eu-north-1" } });
 
         logger.compute(cid, `Detecting timeline in section [${inputData.sectionCode}] for topic [${inputData.topicId} - ${inputData.topicCode}]`, "info");
 
@@ -64,7 +60,7 @@ export class SectionJuiceAgent extends GaleAgent<typeof SectionJuiceAgent.inputS
         // 2. Prompt
         const prompt = await this.prompt({ sectionContent });
 
-        const response = await ai.generate({ prompt: prompt, output: { schema: SectionJuiceAgent.juiceSchema } });
+        const response = await ai.generate({ prompt: prompt, outputSchema: SectionJuiceAgent.juiceSchema });
 
         // 3. Return classification result
         return new AgentTaskResponse("completed", cid, {

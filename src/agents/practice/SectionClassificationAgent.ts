@@ -1,7 +1,6 @@
 import { GaleAgent, GaleAgentManifest } from "../../gale/GaleAgent";
 import { AgentTaskRequest, AgentTaskResponse } from "../../gale/model/AgentTask";
-import { genkit, z } from 'genkit';
-import { awsBedrock, anthropicClaude37SonnetV1 } from "genkitx-aws-bedrock";
+import { z } from 'genkit';
 import { TomeKnowledgeBase } from "../../tomekb/TomeKnowledgeBase";
 import { LabelSchema } from "../../model/LabelSchema";
 import { GaleKit } from "../../gale/gentools/GaleKit";
@@ -39,7 +38,7 @@ export class SectionClassificationAgent extends GaleAgent<typeof SectionClassifi
         const logger = this.logger!;
         const inputData = task.taskInputData!;
 
-        const ai = GaleKit.gale({ model: "amazon.nova-pro", host: { region: "eu-north-1" } });
+        const ai = GaleKit.gale({ model: "amazon.nova-lite", host: { region: "eu-north-1" } });
 
         logger.compute(cid, `Classifying section [${inputData.sectionCode}] for topic [${inputData.topicId} - ${inputData.topicCode}]`, "info");
 

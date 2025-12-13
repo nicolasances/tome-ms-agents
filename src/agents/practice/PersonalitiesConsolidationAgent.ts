@@ -3,6 +3,7 @@ import { anthropicClaude37SonnetV1, awsBedrock } from "genkitx-aws-bedrock";
 import { GaleAgent, GaleAgentManifest } from "../../gale/GaleAgent";
 import { PersonalitySchema } from "../../model/PersonalitiesSchema";
 import { AgentTaskRequest, AgentTaskResponse } from "../../gale/model/AgentTask";
+import { GaleKit } from "../../gale/gentools/GaleKit";
 
 
 export class PersonalitiesConsolidationAgent extends GaleAgent<typeof PersonalitiesConsolidationAgent.inputSchema, typeof PersonalitiesConsolidationAgent.outputSchema> {
@@ -37,12 +38,7 @@ export class PersonalitiesConsolidationAgent extends GaleAgent<typeof Personalit
         const logger = this.logger!;
         const inputData = task.taskInputData!;
 
-        const ai = genkit({
-            plugins: [
-                awsBedrock({ region: "eu-north-1" }),
-            ],
-            model: anthropicClaude37SonnetV1("eu"),
-        });
+        const ai = GaleKit.gale({ model: "amazon.nova-lite", host: { region: "eu-north-1" } });
 
         logger.compute(cid, `Consolidating genealogy for topic [${inputData.topicId} - ${inputData.topicCode}]`, "info");
 
@@ -52,7 +48,7 @@ export class PersonalitiesConsolidationAgent extends GaleAgent<typeof Personalit
 
         const response = await ai.generate({
             prompt: prompt,
-            output: { schema: PersonalitiesConsolidationAgent.llmOutputSchema }
+            outputSchema: PersonalitiesConsolidationAgent.llmOutputSchema
         });
 
         // 3. Return classification result

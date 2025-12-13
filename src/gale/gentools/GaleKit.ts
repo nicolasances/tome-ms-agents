@@ -1,5 +1,5 @@
 import { Genkit, genkit, z } from "genkit";
-import { amazonNovaProV1, anthropicClaude37SonnetV1, awsBedrock } from "../../genkit/index";
+import { amazonNovaLiteV1, amazonNovaProV1, anthropicClaude37SonnetV1, awsBedrock } from "../../genkit/index";
 
 export class GaleKit {
 
@@ -46,7 +46,7 @@ export interface GaleHost {
     region: string;
 }
 
-export type ModelId = "anthropic.claude-3.7-sonnet" | "amazon.nova-pro" ;
+export type ModelId = "anthropic.claude-3.7-sonnet" | "amazon.nova-pro" | "amazon.nova-lite";
 
 function getModel(modeId: ModelId, region: string) {
 
@@ -55,6 +55,8 @@ function getModel(modeId: ModelId, region: string) {
             return anthropicClaude37SonnetV1(region);
         case "amazon.nova-pro":
             return amazonNovaProV1(region);
+        case "amazon.nova-lite": 
+            return amazonNovaLiteV1;
         default:
             throw new Error(`Unsupported model id: ${modeId}`);
     }

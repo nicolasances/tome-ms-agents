@@ -4,6 +4,7 @@ import { GaleAgent, GaleAgentManifest } from "../../gale/GaleAgent";
 import { AgentTaskRequest, AgentTaskResponse } from "../../gale/model/AgentTask";
 import { GenealogicTreeSchema, RelationshipSchema } from "../../model/GenealogicTreeSchema";
 import { PersonalitySchema } from "../../model/PersonalitiesSchema";
+import { GaleKit } from "../../gale/gentools/GaleKit";
 
 
 export class GenealogicTreeAgent extends GaleAgent<typeof GenealogicTreeAgent.inputSchema, typeof GenealogicTreeAgent.outputSchema> {
@@ -41,12 +42,7 @@ export class GenealogicTreeAgent extends GaleAgent<typeof GenealogicTreeAgent.in
         const logger = this.logger!;
         const inputData = task.taskInputData!;
 
-        const ai = genkit({
-            plugins: [
-                awsBedrock({ region: "eu-north-1" }),
-            ],
-            model: anthropicClaude37SonnetV1("eu"),
-        });
+        const ai = GaleKit.gale({ model: "amazon.nova-lite", host: { region: "eu-north-1" } });
 
         logger.compute(cid, `Consolidating genealogy for topic [${inputData.topicId} - ${inputData.topicCode}]`, "info");
 
@@ -55,7 +51,7 @@ export class GenealogicTreeAgent extends GaleAgent<typeof GenealogicTreeAgent.in
             peopleDescriptions: JSON.stringify(task.taskInputData!.peopleDescriptions, null, 2)
         });
 
-        const response = await ai.generate({ prompt: prompt, output: { schema: GenealogicTreeAgent.genealogicTrees } });
+        const response = await ai.generate({ prompt: prompt, outputSchema: GenealogicTreeAgent.genealogicTrees });
 
         // 3. Return classification result
         return new AgentTaskResponse("completed", cid, {

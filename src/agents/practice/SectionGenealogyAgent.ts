@@ -5,6 +5,7 @@ import { AgentTaskRequest, AgentTaskResponse } from "../../gale/model/AgentTask"
 import { TomeKnowledgeBase } from "../../tomekb/TomeKnowledgeBase";
 import { RelationshipSchema } from "../../model/GenealogicTreeSchema";
 import { PersonalitySchema } from "../../model/PersonalitiesSchema";
+import { GaleKit } from "../../gale/gentools/GaleKit";
 
 
 export class SectionGenealogyAgent extends GaleAgent<typeof SectionGenealogyAgent.inputSchema, typeof SectionGenealogyAgent.outputSchema> {
@@ -45,12 +46,7 @@ export class SectionGenealogyAgent extends GaleAgent<typeof SectionGenealogyAgen
         const logger = this.logger!;
         const inputData = task.taskInputData!;
 
-        const ai = genkit({
-            plugins: [
-                awsBedrock({ region: "eu-north-1" }),
-            ],
-            model: anthropicClaude37SonnetV1("eu"),
-        });
+        const ai = GaleKit.gale({ model: "amazon.nova-lite", host: { region: "eu-north-1" } });
 
         logger.compute(cid, `Task [${task.taskId}] Detecting genealogy in section [${inputData.sectionCode}] for topic [${inputData.topicId} - ${inputData.topicCode}]`, "info");
 
@@ -59,7 +55,7 @@ export class SectionGenealogyAgent extends GaleAgent<typeof SectionGenealogyAgen
 
         const prompt = await this.prompt({ sectionContent: sectionContent });
 
-        const response = await ai.generate({ prompt: prompt, output: { schema: SectionGenealogyAgent.responseSchema } });
+        const response = await ai.generate({ prompt: prompt, outputSchema: SectionGenealogyAgent.responseSchema });
 
         // 3. Return classification result
         return new AgentTaskResponse("completed", cid, {
