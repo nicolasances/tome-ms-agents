@@ -29,7 +29,16 @@ export class GaleKit {
      */
     async generate(prompt: Prompt) {
 
-        return this.llm.generate({ prompt: prompt.prompt, output: { schema: prompt.outputSchema } });
+        try {
+            return this.llm.generate({ prompt: prompt.prompt, output: { schema: prompt.outputSchema } });
+
+        } catch (error) {
+
+            // If the errror is an "Schema validation failed" error, we rethrow it as is for the caller to handle it
+            if ((error as Error).message.includes("Schema validation failed")) {
+                throw new LLMError("llmOutputTypError", (error as Error).message);
+            }
+        }
     }
 
     static getSupportedModels(): ModelId[] {
@@ -61,9 +70,25 @@ function getModel(modeId: ModelId, region: string) {
             return anthropicClaude37SonnetV1(region);
         case "amazon.nova-pro":
             return amazonNovaProV1(region);
-        case "amazon.nova-lite": 
+        case "amazon.nova-lite":
             return amazonNovaLiteV1;
         default:
             throw new Error(`Unsupported model id: ${modeId}`);
     }
 }
+
+export class LLMError extends Error {
+
+    code: LLMErrorCode;
+
+    constructor(code: LLMErrorCode, message: string) {
+        super(message);
+
+        this.code = code;
+        this.name = "LLMError";
+
+    }
+
+}
+
+export type LLMErrorCode = "llmOutputTypError";
