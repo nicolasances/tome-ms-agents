@@ -4,6 +4,7 @@ import { AgentRunOptions, GaleAgent, GaleAgentManifest } from "./GaleAgent";
 import { AgentTaskRequest, AgentTaskResponse } from "./model/AgentTask";
 import { zodToJsonSchema } from 'zod-to-json-schema';
 import { Prompt } from "./util/Prompt";
+import { GaleKit, ModelId } from "./gentools/GaleKit";
 
 /**
  * Delegate to handle task execution requests for a Gale Agent.
@@ -70,6 +71,7 @@ export class AgentInfo {
     inputSchema: any;
     outputSchema: any;
     promptTemplate?: string;
+    allowedModels: ModelId[] = GaleKit.getSupportedModels();
 
     static fromAgentManifest(manifest: GaleAgentManifest): AgentInfo {
 
@@ -79,6 +81,7 @@ export class AgentInfo {
         info.taskId = manifest.taskId;
         info.inputSchema = zodToJsonSchema(manifest.inputSchema);
         info.outputSchema = zodToJsonSchema(manifest.outputSchema);
+        info.allowedModels = GaleKit.getSupportedModels();
 
         return info;
     }

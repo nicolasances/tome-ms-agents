@@ -1,6 +1,8 @@
 import { Genkit, genkit, z } from "genkit";
 import { amazonNovaLiteV1, amazonNovaProV1, anthropicClaude37SonnetV1, awsBedrock } from "../../genkit/index";
 
+const SUPPORTED_MODELS = ["anthropic.claude-3.7-sonnet", "amazon.nova-pro", "amazon.nova-lite"] as const;
+
 export class GaleKit {
 
     constructor(private llm: Genkit) { }
@@ -30,6 +32,10 @@ export class GaleKit {
         return this.llm.generate({ prompt: prompt.prompt, output: { schema: prompt.outputSchema } });
     }
 
+    static getSupportedModels(): ModelId[] {
+        return [...SUPPORTED_MODELS];
+    }
+
 }
 
 export interface Prompt {
@@ -46,7 +52,7 @@ export interface GaleHost {
     region: string;
 }
 
-export type ModelId = "anthropic.claude-3.7-sonnet" | "amazon.nova-pro" | "amazon.nova-lite";
+export type ModelId = typeof SUPPORTED_MODELS[number];
 
 function getModel(modeId: ModelId, region: string) {
 
