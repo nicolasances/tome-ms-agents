@@ -38,6 +38,8 @@ export class GaleKit {
             if ((error as Error).message.includes("Schema validation failed")) {
                 throw new LLMError("llmOutputTypError", (error as Error).message);
             }
+
+            throw error;
         }
     }
 

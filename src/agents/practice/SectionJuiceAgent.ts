@@ -66,7 +66,7 @@ export class SectionJuiceAgent extends GaleAgent<typeof SectionJuiceAgent.inputS
             topicCode: inputData.topicCode,
             sectionCode: inputData.sectionCode,
             sectionIndex: inputData.sectionIndex,
-            juice: response.output!
+            juice: response?.output!
         });
     }
 }
