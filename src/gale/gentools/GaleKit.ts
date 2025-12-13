@@ -30,10 +30,11 @@ export class GaleKit {
     async generate(prompt: Prompt) {
 
         try {
-            return this.llm.generate({ prompt: prompt.prompt, output: { schema: prompt.outputSchema } });
-
+            const r = await this.llm.generate({ prompt: prompt.prompt, output: { schema: prompt.outputSchema } });
+            return r;
+            
         } catch (error) {
-
+            
             // If the errror is an "Schema validation failed" error, we rethrow it as is for the caller to handle it
             if ((error as Error).message.includes("Schema validation failed")) {
                 throw new LLMError("llmOutputTypError", (error as Error).message);
