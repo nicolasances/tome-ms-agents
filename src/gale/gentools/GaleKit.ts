@@ -1,5 +1,5 @@
 import { Genkit, genkit, z } from "genkit";
-import { amazonNovaLiteV1, amazonNovaProV1, anthropicClaude37SonnetV1, awsBedrock } from "../../genkit/index";
+import { amazonNovaLiteV1, amazonNovaProV1, anthropicClaude37SonnetV1, awsBedrock } from "genkitx-aws-bedrock";
 
 const SUPPORTED_MODELS = ["anthropic.claude-3.7-sonnet", "amazon.nova-pro", "amazon.nova-lite"] as const;
 
