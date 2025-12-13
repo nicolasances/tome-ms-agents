@@ -39,7 +39,7 @@ export class SectionJuiceAgent extends GaleAgent<typeof SectionJuiceAgent.inputS
         inputSchema: SectionJuiceAgent.inputSchema,
         outputSchema: SectionJuiceAgent.outputSchema,
         description: "Agent for extracting the most important information from sections of a Tome Topic. This agent analyzes the content of a section and summarizes the key events, facts, characters, and dates that are essential to remember.", 
-        model: "anthropic.claude-3.7-sonnet",
+        model: "amazon.nova-pro",
     };
 
     async executeTask(task: AgentTaskRequest<typeof SectionJuiceAgent.inputSchema>): Promise<AgentTaskResponse<typeof SectionJuiceAgent.outputSchema>> {
