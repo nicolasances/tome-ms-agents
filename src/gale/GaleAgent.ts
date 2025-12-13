@@ -97,6 +97,8 @@ export abstract class GaleAgent<I extends z.ZodTypeAny, O extends z.ZodTypeAny> 
      */
     protected ai(model: ModelId): GaleKit {
 
+        if (this.options?.playground?.modelOverride) this.logger?.compute(this.execContext?.cid || "no-cid", `Overriding model to [${this.options.playground.modelOverride}] as per playground settings`, "info");
+
         return GaleKit.gale({ model: this.options?.playground?.modelOverride || model, host: { region: "eu-north-1" } });
 
     }
