@@ -83,12 +83,14 @@ function getModel(modeId: ModelId, region: string) {
 export class LLMError extends Error {
 
     code: LLMErrorCode;
+    message: string;
 
     constructor(code: LLMErrorCode, message: string) {
         super(message);
 
         this.code = code;
         this.name = "LLMError";
+        this.message = message;
 
     }
 
