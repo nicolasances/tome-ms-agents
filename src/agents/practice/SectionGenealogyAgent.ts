@@ -35,7 +35,8 @@ export class SectionGenealogyAgent extends GaleAgent<typeof SectionGenealogyAgen
         taskId: SectionGenealogyAgent.taskId,
         inputSchema: SectionGenealogyAgent.inputSchema,
         outputSchema: SectionGenealogyAgent.outputSchema,
-        description: "Agent for detecting genealogical information in sections of a Tome Topic. This agent analyzes the content of a section and determines if it contains genealogical details such as family relationships, lineages, or ancestry information."
+        description: "Agent for detecting genealogical information in sections of a Tome Topic. This agent analyzes the content of a section and determines if it contains genealogical details such as family relationships, lineages, or ancestry information.", 
+        model: "anthropic.claude-3.7-sonnet",
     };
 
     async executeTask(task: AgentTaskRequest<typeof SectionGenealogyAgent.inputSchema>): Promise<AgentTaskResponse<typeof SectionGenealogyAgent.outputSchema>> {
@@ -44,7 +45,7 @@ export class SectionGenealogyAgent extends GaleAgent<typeof SectionGenealogyAgen
         const logger = this.logger!;
         const inputData = task.taskInputData!;
 
-        const ai = this.ai("anthropic.claude-3.7-sonnet");
+        const ai = this.ai();
 
         logger.compute(cid, `Task [${task.taskId}] Detecting genealogy in section [${inputData.sectionCode}] for topic [${inputData.topicId} - ${inputData.topicCode}]`, "info");
 

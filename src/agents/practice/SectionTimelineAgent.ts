@@ -29,7 +29,8 @@ export class SectionTimelineAgent extends GaleAgent<typeof SectionTimelineAgent.
         taskId: SectionTimelineAgent.taskId,
         inputSchema: SectionTimelineAgent.inputSchema,
         outputSchema: SectionTimelineAgent.outputSchema,
-        description: "Agent for extracting timeline information in sections of a Tome Topic. This agent analyzes the content of a section and determines if it contains timeline details such as dates and descriptions of events."
+        description: "Agent for extracting timeline information in sections of a Tome Topic. This agent analyzes the content of a section and determines if it contains timeline details such as dates and descriptions of events.", 
+        model: "anthropic.claude-3.7-sonnet",
     };
 
     async executeTask(task: AgentTaskRequest<typeof SectionTimelineAgent.inputSchema>): Promise<AgentTaskResponse<typeof SectionTimelineAgent.outputSchema>> {
@@ -38,7 +39,7 @@ export class SectionTimelineAgent extends GaleAgent<typeof SectionTimelineAgent.
         const logger = this.logger!;
         const inputData = task.taskInputData!;
 
-        const ai = this.ai("anthropic.claude-3.7-sonnet");
+        const ai = this.ai();
 
         logger.compute(cid, `Detecting timeline in section [${inputData.sectionCode}] for topic [${inputData.topicId} - ${inputData.topicCode}]`, "info");
 

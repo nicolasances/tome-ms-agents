@@ -27,7 +27,8 @@ export class PersonalitiesConsolidationAgent extends GaleAgent<typeof Personalit
         taskId: PersonalitiesConsolidationAgent.taskId,
         inputSchema: PersonalitiesConsolidationAgent.inputSchema,
         outputSchema: PersonalitiesConsolidationAgent.outputSchema,
-        description: "Agent for consolidating personalities information of a Tome Topic. This agent consolidates personalities data from multiple sections into a comprehensive overview and a set of complete genealogical trees."
+        description: "Agent for consolidating personalities information of a Tome Topic. This agent consolidates personalities data from multiple sections into a comprehensive overview and a set of complete genealogical trees.", 
+        model: "anthropic.claude-3.7-sonnet",
     };
 
     async executeTask(task: AgentTaskRequest<typeof PersonalitiesConsolidationAgent.inputSchema>): Promise<AgentTaskResponse<typeof PersonalitiesConsolidationAgent.outputSchema>> {
@@ -36,7 +37,7 @@ export class PersonalitiesConsolidationAgent extends GaleAgent<typeof Personalit
         const logger = this.logger!;
         const inputData = task.taskInputData!;
 
-        const ai = this.ai("anthropic.claude-3.7-sonnet");
+        const ai = this.ai();
 
         logger.compute(cid, `Consolidating genealogy for topic [${inputData.topicId} - ${inputData.topicCode}]`, "info");
 

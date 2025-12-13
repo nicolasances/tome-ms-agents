@@ -28,7 +28,8 @@ export class SectionClassificationAgent extends GaleAgent<typeof SectionClassifi
         taskId: SectionClassificationAgent.taskId,
         inputSchema: SectionClassificationAgent.inputSchema,
         outputSchema: SectionClassificationAgent.outputSchema,
-        description: "Agent for labelling sections of a Tome Topic. This agent analyzes the content of a section and assigns one or more predefined labels based on the content's characteristics."
+        description: "Agent for labelling sections of a Tome Topic. This agent analyzes the content of a section and assigns one or more predefined labels based on the content's characteristics.", 
+        model: "amazon.nova-lite",
     };
 
     async executeTask(task: AgentTaskRequest<typeof SectionClassificationAgent.inputSchema>): Promise<AgentTaskResponse<typeof SectionClassificationAgent.outputSchema>> {
@@ -37,7 +38,7 @@ export class SectionClassificationAgent extends GaleAgent<typeof SectionClassifi
         const logger = this.logger!;
         const inputData = task.taskInputData!;
 
-        const ai = this.ai("amazon.nova-lite");
+        const ai = this.ai();
 
         logger.compute(cid, `Classifying section [${inputData.sectionCode}] for topic [${inputData.topicId} - ${inputData.topicCode}]`, "info");
 

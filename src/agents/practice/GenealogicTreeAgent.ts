@@ -31,7 +31,8 @@ export class GenealogicTreeAgent extends GaleAgent<typeof GenealogicTreeAgent.in
         taskId: GenealogicTreeAgent.taskId,
         inputSchema: GenealogicTreeAgent.inputSchema,
         outputSchema: GenealogicTreeAgent.outputSchema,
-        description: "Agent for consolidating genealogical information of a Tome Topic. This agent consolidates genealogical data from multiple sections into a comprehensive overview and a set of complete genealogical trees."
+        description: "Agent for consolidating genealogical information of a Tome Topic. This agent consolidates genealogical data from multiple sections into a comprehensive overview and a set of complete genealogical trees.", 
+        model: "anthropic.claude-3.7-sonnet",
     };
 
     async executeTask(task: AgentTaskRequest<typeof GenealogicTreeAgent.inputSchema>): Promise<AgentTaskResponse<typeof GenealogicTreeAgent.outputSchema>> {
@@ -40,7 +41,7 @@ export class GenealogicTreeAgent extends GaleAgent<typeof GenealogicTreeAgent.in
         const logger = this.logger!;
         const inputData = task.taskInputData!;
 
-        const ai = this.ai("anthropic.claude-3.7-sonnet");
+        const ai = this.ai();
 
         logger.compute(cid, `Consolidating genealogy for topic [${inputData.topicId} - ${inputData.topicCode}]`, "info");
 

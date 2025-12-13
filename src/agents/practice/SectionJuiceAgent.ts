@@ -38,7 +38,8 @@ export class SectionJuiceAgent extends GaleAgent<typeof SectionJuiceAgent.inputS
         taskId: SectionJuiceAgent.taskId,
         inputSchema: SectionJuiceAgent.inputSchema,
         outputSchema: SectionJuiceAgent.outputSchema,
-        description: "Agent for extracting the most important information from sections of a Tome Topic. This agent analyzes the content of a section and summarizes the key events, facts, characters, and dates that are essential to remember."
+        description: "Agent for extracting the most important information from sections of a Tome Topic. This agent analyzes the content of a section and summarizes the key events, facts, characters, and dates that are essential to remember.", 
+        model: "anthropic.claude-3.7-sonnet",
     };
 
     async executeTask(task: AgentTaskRequest<typeof SectionJuiceAgent.inputSchema>): Promise<AgentTaskResponse<typeof SectionJuiceAgent.outputSchema>> {
@@ -47,7 +48,7 @@ export class SectionJuiceAgent extends GaleAgent<typeof SectionJuiceAgent.inputS
         const logger = this.logger!;
         const inputData = task.taskInputData! as z.infer<typeof SectionJuiceAgent.inputSchema>;
 
-        const ai = this.ai("anthropic.claude-3.7-sonnet");
+        const ai = this.ai();
 
         logger.compute(cid, `Detecting timeline in section [${inputData.sectionCode}] for topic [${inputData.topicId} - ${inputData.topicCode}]`, "info");
 

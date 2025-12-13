@@ -95,12 +95,11 @@ export abstract class GaleAgent<I extends z.ZodTypeAny, O extends z.ZodTypeAny> 
      * 
      * @returns 
      */
-    protected ai(model: ModelId): GaleKit {
+    protected ai(): GaleKit {
 
         if (this.options?.playground?.modelOverride) this.logger?.compute(this.execContext?.cid || "no-cid", `Overriding model to [${this.options.playground.modelOverride}] as per playground settings`, "info");
 
-        return GaleKit.gale({ model: this.options?.playground?.modelOverride || model, host: { region: "eu-north-1" } });
-
+        return GaleKit.gale({ model: this.options?.playground?.modelOverride || this.manifest.model, host: { region: "eu-north-1" } });
     }
 
     abstract executeTask(task: AgentTaskRequest<I>): Promise<AgentTaskResponse<O>>;
@@ -122,6 +121,7 @@ export interface GaleAgentManifest {
     taskId: string;
     inputSchema: z.ZodTypeAny;
     outputSchema: z.ZodTypeAny;
+    model: ModelId;
 
 }
 

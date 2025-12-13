@@ -72,6 +72,7 @@ export class AgentInfo {
     outputSchema: any;
     promptTemplate?: string;
     allowedModels: ModelId[] = GaleKit.getSupportedModels();
+    model: ModelId = "anthropic.claude-3.7-sonnet";
 
     static fromAgentManifest(manifest: GaleAgentManifest): AgentInfo {
 
@@ -82,6 +83,7 @@ export class AgentInfo {
         info.inputSchema = zodToJsonSchema(manifest.inputSchema);
         info.outputSchema = zodToJsonSchema(manifest.outputSchema);
         info.allowedModels = GaleKit.getSupportedModels();
+        info.model = manifest.model;
 
         return info;
     }
