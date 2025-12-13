@@ -1,12 +1,12 @@
 import http from "request";
 import { AgentDefinition } from "../model/AgentDefinition";
-import { AgentTaskRequest } from "../model/AgentTask";
+import { AgentTaskRequest, AgentTaskResponse } from "../model/AgentTask";
 import { ExecutionContext } from "toto-api-controller";
 import { v4 as uuidv4 } from "uuid";
 
 export class GaleBrokerAPI {
 
-    constructor(private galeBrokerURL: string, private execContext?: ExecutionContext) {}
+    constructor(private galeBrokerURL: string, private execContext?: ExecutionContext) { }
 
     /**
      * Executes the agent with the given input.
@@ -57,7 +57,7 @@ export class GaleBrokerAPI {
      * 
      * @returns 
      */
-    async postTask(task: AgentTaskRequest<any>, token: string): Promise<any> {
+    async postTask(task: AgentTaskRequest<any>, token: string): Promise<AgentTaskResponse<any>> {
 
         return new Promise<any>((success, failure) => {
 
@@ -90,7 +90,7 @@ export interface RegisterAgentRequest {
 }
 export class RegisterAgentResponse {
 
-    constructor(private modifiedCount: number) {}
+    constructor(private modifiedCount: number) { }
 
     static fromHTTPResponse(responseBody: any): RegisterAgentResponse {
         return new RegisterAgentResponse(
