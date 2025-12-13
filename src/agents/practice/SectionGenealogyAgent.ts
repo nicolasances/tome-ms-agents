@@ -1,11 +1,9 @@
-import { genkit, z } from "genkit";
-import { anthropicClaude37SonnetV1, awsBedrock } from "genkitx-aws-bedrock";
+import { z } from "genkit";
 import { GaleAgent, GaleAgentManifest } from "../../gale/GaleAgent";
 import { AgentTaskRequest, AgentTaskResponse } from "../../gale/model/AgentTask";
 import { TomeKnowledgeBase } from "../../tomekb/TomeKnowledgeBase";
 import { RelationshipSchema } from "../../model/GenealogicTreeSchema";
 import { PersonalitySchema } from "../../model/PersonalitiesSchema";
-import { GaleKit } from "../../gale/gentools/GaleKit";
 
 
 export class SectionGenealogyAgent extends GaleAgent<typeof SectionGenealogyAgent.inputSchema, typeof SectionGenealogyAgent.outputSchema> {
@@ -46,7 +44,7 @@ export class SectionGenealogyAgent extends GaleAgent<typeof SectionGenealogyAgen
         const logger = this.logger!;
         const inputData = task.taskInputData!;
 
-        const ai = GaleKit.gale({ model: "amazon.nova-lite", host: { region: "eu-north-1" } });
+        const ai = this.ai("anthropic.claude-3.7-sonnet");
 
         logger.compute(cid, `Task [${task.taskId}] Detecting genealogy in section [${inputData.sectionCode}] for topic [${inputData.topicId} - ${inputData.topicCode}]`, "info");
 

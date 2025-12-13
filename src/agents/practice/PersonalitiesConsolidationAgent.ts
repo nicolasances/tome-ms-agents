@@ -1,9 +1,7 @@
-import { genkit, z } from "genkit";
-import { anthropicClaude37SonnetV1, awsBedrock } from "genkitx-aws-bedrock";
+import { z } from "genkit";
 import { GaleAgent, GaleAgentManifest } from "../../gale/GaleAgent";
 import { PersonalitySchema } from "../../model/PersonalitiesSchema";
 import { AgentTaskRequest, AgentTaskResponse } from "../../gale/model/AgentTask";
-import { GaleKit } from "../../gale/gentools/GaleKit";
 
 
 export class PersonalitiesConsolidationAgent extends GaleAgent<typeof PersonalitiesConsolidationAgent.inputSchema, typeof PersonalitiesConsolidationAgent.outputSchema> {
@@ -38,7 +36,7 @@ export class PersonalitiesConsolidationAgent extends GaleAgent<typeof Personalit
         const logger = this.logger!;
         const inputData = task.taskInputData!;
 
-        const ai = GaleKit.gale({ model: "amazon.nova-lite", host: { region: "eu-north-1" } });
+        const ai = this.ai("anthropic.claude-3.7-sonnet");
 
         logger.compute(cid, `Consolidating genealogy for topic [${inputData.topicId} - ${inputData.topicCode}]`, "info");
 

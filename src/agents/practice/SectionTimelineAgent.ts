@@ -1,10 +1,8 @@
-import { genkit, z } from "genkit";
-import { anthropicClaude37SonnetV1, awsBedrock } from "genkitx-aws-bedrock";
+import { z } from "genkit";
 import { GaleAgent, GaleAgentManifest } from "../../gale/GaleAgent";
 import { AgentTaskRequest, AgentTaskResponse } from "../../gale/model/AgentTask";
 import { TomeKnowledgeBase } from "../../tomekb/TomeKnowledgeBase";
 import { TimelineSchema } from "../../model/TimelineSchema";
-import { GaleKit } from "../../gale/gentools/GaleKit";
 
 
 export class SectionTimelineAgent extends GaleAgent<typeof SectionTimelineAgent.inputSchema, typeof SectionTimelineAgent.outputSchema> {
@@ -40,7 +38,7 @@ export class SectionTimelineAgent extends GaleAgent<typeof SectionTimelineAgent.
         const logger = this.logger!;
         const inputData = task.taskInputData!;
 
-        const ai = GaleKit.gale({ model: "amazon.nova-lite", host: { region: "eu-north-1" } });
+        const ai = this.ai("anthropic.claude-3.7-sonnet");
 
         logger.compute(cid, `Detecting timeline in section [${inputData.sectionCode}] for topic [${inputData.topicId} - ${inputData.topicCode}]`, "info");
 

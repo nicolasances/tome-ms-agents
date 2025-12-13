@@ -1,10 +1,8 @@
-import { genkit, z } from "genkit";
-import { anthropicClaude37SonnetV1, awsBedrock } from "genkitx-aws-bedrock";
+import { z } from "genkit";
 import { GaleAgent, GaleAgentManifest } from "../../gale/GaleAgent";
 import { AgentTaskRequest, AgentTaskResponse } from "../../gale/model/AgentTask";
 import { GenealogicTreeSchema, RelationshipSchema } from "../../model/GenealogicTreeSchema";
 import { PersonalitySchema } from "../../model/PersonalitiesSchema";
-import { GaleKit } from "../../gale/gentools/GaleKit";
 
 
 export class GenealogicTreeAgent extends GaleAgent<typeof GenealogicTreeAgent.inputSchema, typeof GenealogicTreeAgent.outputSchema> {
@@ -42,7 +40,7 @@ export class GenealogicTreeAgent extends GaleAgent<typeof GenealogicTreeAgent.in
         const logger = this.logger!;
         const inputData = task.taskInputData!;
 
-        const ai = GaleKit.gale({ model: "amazon.nova-lite", host: { region: "eu-north-1" } });
+        const ai = this.ai("anthropic.claude-3.7-sonnet");
 
         logger.compute(cid, `Consolidating genealogy for topic [${inputData.topicId} - ${inputData.topicCode}]`, "info");
 

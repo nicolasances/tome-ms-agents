@@ -3,7 +3,6 @@ import { AgentTaskRequest, AgentTaskResponse } from "../../gale/model/AgentTask"
 import { z } from 'genkit';
 import { TomeKnowledgeBase } from "../../tomekb/TomeKnowledgeBase";
 import { LabelSchema } from "../../model/LabelSchema";
-import { GaleKit } from "../../gale/gentools/GaleKit";
 
 export class SectionClassificationAgent extends GaleAgent<typeof SectionClassificationAgent.inputSchema, typeof SectionClassificationAgent.outputSchema> {
 
@@ -38,7 +37,7 @@ export class SectionClassificationAgent extends GaleAgent<typeof SectionClassifi
         const logger = this.logger!;
         const inputData = task.taskInputData!;
 
-        const ai = GaleKit.gale({ model: "amazon.nova-lite", host: { region: "eu-north-1" } });
+        const ai = this.ai("amazon.nova-lite");
 
         logger.compute(cid, `Classifying section [${inputData.sectionCode}] for topic [${inputData.topicId} - ${inputData.topicCode}]`, "info");
 

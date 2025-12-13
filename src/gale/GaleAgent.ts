@@ -3,6 +3,7 @@ import { AgentTaskRequest, AgentTaskResponse, AgentTaskOrchestratorResponse } fr
 import { z } from "genkit";
 import { ValidationError } from "toto-api-controller";
 import { Prompt } from "./util/Prompt";
+import { GaleKit, ModelId } from "./gentools/GaleKit";
 
 export abstract class GaleAgent<I extends z.ZodTypeAny, O extends z.ZodTypeAny> {
 
@@ -86,6 +87,20 @@ export abstract class GaleAgent<I extends z.ZodTypeAny, O extends z.ZodTypeAny> 
 
     }
 
+    /**
+     * Returns an instance of GaleKit configured with the specified model.
+     * This method also applies any model override specified in the agent's run options (e.g., from the playground).
+     * 
+     * @param model the model Id to use
+     * 
+     * @returns 
+     */
+    protected ai(model: ModelId): GaleKit {
+
+        return GaleKit.gale({ model: this.options?.playground?.modelOverride || model, host: { region: "eu-north-1" } });
+
+    }
+
     abstract executeTask(task: AgentTaskRequest<I>): Promise<AgentTaskResponse<O>>;
 
 }
@@ -116,7 +131,7 @@ export interface GaleOrchestratorAgentManifest extends GaleAgentManifest {
 
 export interface AgentRunOptions {
 
-    playground?: Playground; 
+    playground?: Playground;
 
 }
 
@@ -126,4 +141,5 @@ export interface Playground {
      * Parameters in the prompt (dynamic injection of content) should still be provided using the handlebars syntax (e.g., {{parameterName}}).
      */
     promptOverride?: string;
+    modelOverride?: ModelId;
 }
