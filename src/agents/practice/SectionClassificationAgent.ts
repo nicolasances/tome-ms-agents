@@ -4,6 +4,7 @@ import { genkit, z } from 'genkit';
 import { awsBedrock, anthropicClaude37SonnetV1 } from "genkitx-aws-bedrock";
 import { TomeKnowledgeBase } from "../../tomekb/TomeKnowledgeBase";
 import { LabelSchema } from "../../model/LabelSchema";
+import { GaleKit } from "../../gale/gentools/GaleKit";
 
 export class SectionClassificationAgent extends GaleAgent<typeof SectionClassificationAgent.inputSchema, typeof SectionClassificationAgent.outputSchema> {
 
@@ -38,12 +39,7 @@ export class SectionClassificationAgent extends GaleAgent<typeof SectionClassifi
         const logger = this.logger!;
         const inputData = task.taskInputData!;
 
-        const ai = genkit({
-            plugins: [
-                awsBedrock({ region: "eu-north-1" }),
-            ],
-            model: anthropicClaude37SonnetV1("eu"),
-        });
+        const ai = GaleKit.gale({ model: "amazon.nova-pro", host: { region: "eu-north-1" } });
 
         logger.compute(cid, `Classifying section [${inputData.sectionCode}] for topic [${inputData.topicId} - ${inputData.topicCode}]`, "info");
 
@@ -57,16 +53,16 @@ export class SectionClassificationAgent extends GaleAgent<typeof SectionClassifi
             new Label("genealogy", "This label should be used for text that contain ANY genealogical information. Genealogical information of interest is ANY and ONLY of the following family relationships: child, parent, sibling, spouse, grandparent, grandchild."),
         ]
 
-        const classificationPrompt = await this.prompt({ 
+        const classificationPrompt = await this.prompt({
             sectionContent: sectionContent,
             labels: labels.map(l => `\n- ${l.code}: ${l.description}`).join('')
-         })
+        })
 
         const ClassificationSchema = z.object({
             labels: z.array(z.string()).describe("List of labels that apply to the content from the predefined set"),
         })
 
-        const response = await ai.generate({ prompt: classificationPrompt, output: { schema: ClassificationSchema } });
+        const response = await ai.generate({ prompt: classificationPrompt, outputSchema: ClassificationSchema });
 
         // 3. Return classification result
         return new AgentTaskResponse("completed", cid, {
