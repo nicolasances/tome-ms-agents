@@ -46,16 +46,7 @@ export class SectionClassificationAgent extends GaleAgent<typeof SectionClassifi
         const sectionContent = await new TomeKnowledgeBase(this.config!).getSectionContent(inputData.topicCode, inputData.sectionCode, inputData.sectionIndex);
 
         // 2. Use an LLM to classify the section content
-        const labels: Label[] = [
-            new Label("history", "This label can be only used for text that describes historical events, figures, or periods. Use this label when the content focuses mainly on a historical subject, event or era. "),
-            new Label("timeline", "This label is appropriate for text that contain events that have a chronological ordering. Use this label when the content contains sequences of events where chronological order can be determined."),
-            new Label("genealogy", "This label should be used for text that contain ANY genealogical information. Genealogical information of interest is ANY and ONLY of the following family relationships: child, parent, sibling, spouse, grandparent, grandchild."),
-        ]
-
-        const classificationPrompt = await this.prompt({
-            sectionContent: sectionContent,
-            labels: labels.map(l => `\n- ${l.code}: ${l.description}`).join('')
-        })
+        const classificationPrompt = await this.prompt({ sectionContent });
 
         const ClassificationSchema = z.object({
             labels: z.array(z.string()).describe("List of labels that apply to the content from the predefined set"),

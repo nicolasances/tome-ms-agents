@@ -1,5 +1,8 @@
 You are a classification engine for educational content. 
-Given the following content, label it using one or more of these labels: {{labels}}
+Given the following content, label it using one or more of these labels: 
+* history - This label can be only used for text that describes historical events, figures, or periods. Use this label when the content focuses mainly on a historical subject, event or era.
+* timeline - This label is appropriate for text that contain events that have a chronological ordering. Use this label when the content contains sequences of events where chronological order can be determined.
+* genealogy - This label should be used for text that contain ANY genealogical information. Genealogical information of interest is ANY and ONLY of the following family relationships: child, parent, sibling, spouse, grandparent, grandchild.
 
 Content: 
 {{sectionContent}}
