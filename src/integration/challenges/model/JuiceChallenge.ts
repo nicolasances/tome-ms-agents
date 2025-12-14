@@ -1,4 +1,3 @@
-import { ValidationError } from "toto-api-controller";
 import { TomeChallenge } from "./TomeChallenge";
 
 export class JuiceChallenge extends TomeChallenge {
@@ -7,13 +6,15 @@ export class JuiceChallenge extends TomeChallenge {
     public context: string;
     public topicId: string;
     public topicCode: string;
+    public sectionCode: string; 
 
     public toRemember: ToRemember[];
 
-    constructor({ topicId, topicCode, context, toRemember }: { topicId: string, topicCode: string, context: string, toRemember: ToRemember[] }) {
+    constructor({ topicId, topicCode, sectionCode, context, toRemember }: { topicId: string, topicCode: string, sectionCode: string, context: string, toRemember: ToRemember[] }) {
         super();
         this.topicId = topicId;
         this.topicCode = topicCode;
+        this.sectionCode = sectionCode;
         this.context = context;
         this.toRemember = toRemember;
     }

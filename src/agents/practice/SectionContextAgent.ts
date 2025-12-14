@@ -58,6 +58,9 @@ export class SectionContextAgent extends GaleAgent<typeof SectionContextAgent.in
 
         const response = await this.ai().generate({ prompt: prompt, outputSchema: SectionContextAgent.contextSchema });
 
+        // 3. Save the Juice Challenge for Tome
+        
+
         // 4. Return classification result
         return new AgentTaskResponse("completed", cid, {
             topicId: inputData.topicId,
