@@ -3,6 +3,8 @@ import { GaleAgent, GaleAgentManifest } from "../../gale/GaleAgent";
 import { AgentTaskRequest, AgentTaskResponse } from "../../gale/model/AgentTask";
 import { TomeKnowledgeBase } from "../../tomekb/TomeKnowledgeBase";
 import { JuiceSchema } from "../../model/JuiceSchema";
+import { TomeChallengesAPI } from "../../integration/challenges/TomeChallengesAPI";
+import { ChallengeFactory } from "../../integration/challenges/ChallengeFactory";
 
 export class SectionContextAgent extends GaleAgent<typeof SectionContextAgent.inputSchema, typeof SectionContextAgent.outputSchema> {
 
@@ -58,17 +60,32 @@ export class SectionContextAgent extends GaleAgent<typeof SectionContextAgent.in
 
         const response = await this.ai().generate({ prompt: prompt, outputSchema: SectionContextAgent.contextSchema });
 
-        // 3. Save the Juice Challenge for Tome
-        
-
-        // 4. Return classification result
-        return new AgentTaskResponse("completed", cid, {
+        const output = {
             topicId: inputData.topicId,
             topicCode: inputData.topicCode,
             sectionCode: inputData.sectionCode,
             sectionIndex: inputData.sectionIndex,
             context: response?.output!.context,
             juice: inputData.juice,
-        });
+        }
+
+        // 3. Save the Juice Challenge for Tome
+        logger.compute(cid, `Created context for section [${inputData.sectionCode}]. Saving Juice Challenge through Tome Challenges API`, "info");
+
+        const challenge = ChallengeFactory.juiceChallenge(output);
+
+        try {
+            await new TomeChallengesAPI("tome-ms-challenges", this.config!).saveChallenge(challenge, cid);
+        } 
+        catch (error) {
+            logger.compute(cid, `Error saving Juice Challenge for section [${inputData.sectionCode}]: ${error}`, "error");
+            
+            return new AgentTaskResponse("failed", cid, {
+                message: "Error saving Juice Challenge: " + (error as Error).message, 
+            } as any);
+        }
+
+        // 4. Return classification result
+        return new AgentTaskResponse("completed", cid, output);
     }
 }
