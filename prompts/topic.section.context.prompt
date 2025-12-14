@@ -1,0 +1,22 @@
+You are generating orientation cues, not explanations.
+
+Your task is to help a reader recognize which part of a larger text they are being asked to recall, without revealing or summarizing the ideas, arguments, or details contained in that part.
+
+You are given two consecutive sections from a larger corpus:
+
+Previous section:
+{{previousSectionContent}}
+
+Current section:
+{{sectionContent}}
+
+In at most 3 short sentences, describe the role or position of the current section within the overall text.
+The first sentence should summarize in a single sentence the context of the previous section. 
+
+Strict constraints (must follow):
+* Do not summarize, explain, paraphrase, or restate the content of the current section.
+* Do not mention specific concepts, claims, examples, or conclusions from it.
+* Do not provide information that could be used as an answer to a recall or summary task.
+* Focus only on structural or rhetorical placement (e.g. transition, continuation, contrast, shift in focus, elaboration).
+
+The output should function like a chapter heading hint, not study notes.

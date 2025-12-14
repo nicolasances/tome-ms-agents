@@ -8,6 +8,7 @@ import { SectionClassificationAgent } from "../../agents/practice/SectionClassif
 import { SectionGenealogyAgent } from "../../agents/practice/SectionGenealogyAgent";
 import { SectionTimelineAgent } from "../../agents/practice/SectionTimelineAgent";
 import { SectionJuiceAgent } from "../../agents/practice/SectionJuiceAgent";
+import { SectionContextAgent } from "../../agents/practice/SectionContextAgent";
 
 /**
  * Provides agents for the classification group in the practice build orchestrator.
@@ -114,6 +115,29 @@ export async function sectionJuiceAgents(input: z.infer<typeof PracticeBuilderOr
                 sectionCode: section.sectionCode,
                 sectionIndex: section.sectionIndex,
             } as z.infer<typeof SectionJuiceAgent.inputSchema>,
+        })
+    );
+
+}
+
+/**
+ * Generates the agents responsible for extracting context information from sections.
+ * Generates one agent per section.
+ */
+export async function sectionContextAgents(input: z.infer<typeof PracticeBuilderOrchestratorAgent.resumeInputSchema>): Promise<AgentNode<typeof SectionContextAgent.inputSchema>[]> {
+
+    const inputData = input.childrenOutputs as z.infer<typeof SectionJuiceAgent.outputSchema>[];
+
+    return inputData.map(section =>
+        new AgentNode<typeof SectionContextAgent.inputSchema>({
+            taskId: SectionContextAgent.taskId,
+            taskInputData: {
+                topicId: section.topicId,
+                topicCode: section.topicCode,
+                sectionCode: section.sectionCode,
+                sectionIndex: section.sectionIndex,
+                juice: section.juice,
+            } as z.infer<typeof SectionContextAgent.inputSchema>,
         })
     );
 

@@ -2,6 +2,7 @@ import { z } from "genkit";
 import { GaleAgent, GaleAgentManifest } from "../../gale/GaleAgent";
 import { AgentTaskRequest, AgentTaskResponse } from "../../gale/model/AgentTask";
 import { TomeKnowledgeBase } from "../../tomekb/TomeKnowledgeBase";
+import { JuiceSchema } from "../../model/JuiceSchema";
 
 export class SectionJuiceAgent extends GaleAgent<typeof SectionJuiceAgent.inputSchema, typeof SectionJuiceAgent.outputSchema> {
 
@@ -14,23 +15,12 @@ export class SectionJuiceAgent extends GaleAgent<typeof SectionJuiceAgent.inputS
         sectionIndex: z.number().describe("Index of the section within the topic."),
     });
 
-    static juiceSchema = z.array(
-        z.object({
-            toRemember: z.string().describe("An important aspect, fact, event to remember."),
-            date: z.object({
-                year: z.number().nullable().describe("Year of the timeline event as an integer."),
-                month: z.number().nullable().describe("Month of the timeline event as an integer (1-12)."),
-                day: z.number().nullable().describe("Day of the month of the timeline event as an integer (1-31)."),
-            }).optional().describe("Date associated with the event, aspect or fact to remember, if any date is available for this event in the text."),
-        })
-    )
-
     static outputSchema = z.object({
         topicId: z.string().describe("Unique identifier (database ID) of the Tome Topic."),
         topicCode: z.string().describe("Unique code of the Tome Topic."),
         sectionCode: z.string().describe("Code of the section that was classified."),
         sectionIndex: z.number().describe("Index of the section within the topic."),
-        juice: SectionJuiceAgent.juiceSchema.describe("Timeline events extracted from the section content."),
+        juice: z.array(JuiceSchema).describe("Main events or aspects extracted from the section content."),
     });
 
     manifest: GaleAgentManifest = {
@@ -38,7 +28,7 @@ export class SectionJuiceAgent extends GaleAgent<typeof SectionJuiceAgent.inputS
         taskId: SectionJuiceAgent.taskId,
         inputSchema: SectionJuiceAgent.inputSchema,
         outputSchema: SectionJuiceAgent.outputSchema,
-        description: "Agent for extracting the most important information from sections of a Tome Topic. This agent analyzes the content of a section and summarizes the key events, facts, characters, and dates that are essential to remember.", 
+        description: "Agent for extracting the most important information from sections of a Tome Topic. This agent analyzes the content of a section and summarizes the key events, facts, characters, and dates that are essential to remember.",
         model: "amazon.nova-pro",
     };
 
@@ -56,9 +46,12 @@ export class SectionJuiceAgent extends GaleAgent<typeof SectionJuiceAgent.inputS
         // 2. Prompt
         const prompt = await this.prompt({ sectionContent });
 
-        const response = await this.ai().generate({ prompt: prompt, outputSchema: SectionJuiceAgent.juiceSchema });
+        const response = await this.ai().generate({ prompt: prompt, outputSchema: z.array(JuiceSchema).describe("Main events or aspects extracted from the section content.") });
 
-        // 3. Return classification result
+        // 3. Create Juice Challenge for Tome
+
+
+        // 4. Return classification result
         return new AgentTaskResponse("completed", cid, {
             topicId: inputData.topicId,
             topicCode: inputData.topicCode,

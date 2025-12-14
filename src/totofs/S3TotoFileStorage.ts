@@ -1,4 +1,4 @@
-import { GetObjectCommand, S3Client } from "@aws-sdk/client-s3";
+import { GetObjectCommand, ListObjectsV2Command, S3Client } from "@aws-sdk/client-s3";
 import { TotoControllerConfig, TotoRuntimeError } from "toto-api-controller";
 import { TotoFileStorage } from "./TotoFileStorage";
 
@@ -42,6 +42,35 @@ export class S3TotoFileStorage extends TotoFileStorage {
             return bodyContents;
         } catch (error) {
             throw new TotoRuntimeError(500, `Failed to retrieve file from S3 bucket ${bucketName} at path ${filePath}: ${error}`);
+        }
+    }
+
+        /**
+     * Retrieves a list of files from a specified folder in storage.
+     * 
+     * @param bucketName the name of the bucket
+     * @param folderPath the path of the folder from which to list files
+     * 
+     * @returns a list of file paths
+     */
+    async listFiles(bucketName: string, folderPath: string): Promise<string[]> {
+
+        try {
+            const command = new ListObjectsV2Command({
+                Bucket: bucketName,
+                Prefix: folderPath
+            });
+
+            const response = await this.s3Client.send(command);
+            
+            if (!response.Contents) {
+                return [];
+            }
+
+            return response.Contents.filter(item => item.Key !== undefined).map(item => item.Key!);
+
+        } catch (error) {
+            throw new TotoRuntimeError(500, `Failed to list files from S3 bucket ${bucketName} with prefix ${folderPath}: ${error}`);
         }
     }
 }
