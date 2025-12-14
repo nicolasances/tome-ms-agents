@@ -1,7 +1,6 @@
 import { z } from "genkit";
 import { GaleAgent, GaleAgentManifest } from "../../gale/GaleAgent";
 import { AgentTaskRequest, AgentTaskResponse } from "../../gale/model/AgentTask";
-import { TomeKnowledgeBase } from "../../tomekb/TomeKnowledgeBase";
 import { JuiceSchema } from "../../model/JuiceSchema";
 import { TomeChallengesAPI } from "../../integration/challenges/TomeChallengesAPI";
 import { ChallengeFactory } from "../../integration/challenges/ChallengeFactory";
@@ -15,6 +14,7 @@ export class SectionContextAgent extends GaleAgent<typeof SectionContextAgent.in
         topicCode: z.string().describe("Unique code of the Tome Topic to build practice for. E.g. the-merovingians"),
         sectionCode: z.string().describe("Code of the section to classify. E.g. 'boniface-viii'"),
         sectionIndex: z.number().describe("Index of the section within the topic."),
+        previousSectionJuice: z.array(JuiceSchema).nullable().describe("Main events or aspects extracted from the previous section content."),
         juice: z.array(JuiceSchema).describe("Main events or aspects extracted from the section content."),
     });
 
@@ -50,7 +50,7 @@ export class SectionContextAgent extends GaleAgent<typeof SectionContextAgent.in
 
         // 1. Retrieve section content and the previous section content, so that context can be built
         let previousSectionContent: string = "Not available";
-        if (inputData.sectionIndex > 1) previousSectionContent = await new TomeKnowledgeBase(this.config!).getSectionAtIndex(inputData.topicCode, inputData.sectionIndex - 1) || "Not available";
+        if (inputData.previousSectionJuice) previousSectionContent = inputData.previousSectionJuice.map(j => j.toRemember).join("\n");
 
         // const sectionContent = await new TomeKnowledgeBase(this.config!).getSectionContent(inputData.topicCode, inputData.sectionCode, inputData.sectionIndex);
         const sectionContent = inputData.juice.map(j => j.toRemember).join("\n");
@@ -79,7 +79,7 @@ export class SectionContextAgent extends GaleAgent<typeof SectionContextAgent.in
         } 
         catch (error) {
             logger.compute(cid, `Error saving Juice Challenge for section [${inputData.sectionCode}]: ${error}`, "error");
-            
+
             return new AgentTaskResponse("failed", cid, {
                 message: "Error saving Juice Challenge: " + (error as Error).message, 
             } as any);

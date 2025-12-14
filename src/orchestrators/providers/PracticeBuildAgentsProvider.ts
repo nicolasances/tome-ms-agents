@@ -128,17 +128,30 @@ export async function sectionContextAgents(input: z.infer<typeof PracticeBuilder
 
     const inputData = input.childrenOutputs as z.infer<typeof SectionJuiceAgent.outputSchema>[];
 
-    return inputData.map(section =>
-        new AgentNode<typeof SectionContextAgent.inputSchema>({
-            taskId: SectionContextAgent.taskId,
-            taskInputData: {
-                topicId: section.topicId,
-                topicCode: section.topicCode,
-                sectionCode: section.sectionCode,
-                sectionIndex: section.sectionIndex,
-                juice: section.juice,
-            } as z.infer<typeof SectionContextAgent.inputSchema>,
-        })
-    );
+    const agents = []
 
+    const sections = inputData.sort((s1, s2) => s1.sectionIndex - s2.sectionIndex);
+
+    for (let i = 0; i < sections.length; i++) {
+
+        const section = sections[i];
+        const previousSection = i > 0 ? sections[i - 1] : null;
+
+        agents.push(
+            new AgentNode<typeof SectionContextAgent.inputSchema>({
+                taskId: SectionContextAgent.taskId,
+                taskInputData: {
+                    topicId: section.topicId,
+                    topicCode: section.topicCode,
+                    sectionCode: section.sectionCode,
+                    sectionIndex: section.sectionIndex,
+                    previousSectionJuice: previousSection?.juice || null,
+                    juice: section.juice,
+                } as z.infer<typeof SectionContextAgent.inputSchema>,
+            })
+        )
+
+    }
+
+    return agents;
 }

@@ -18,5 +18,6 @@ Strict constraints (must follow):
 * Do not mention specific concepts, claims, examples, or conclusions from it.
 * Do not provide information that could be used as an answer to a recall or summary task.
 * Focus only on structural or rhetorical placement (e.g. transition, continuation, contrast, shift in focus, elaboration).
+* If the previous section content is empty, make sure you don't use terms that make it look like there was a previous section
 
 The output should function like a chapter heading hint, not study notes.
