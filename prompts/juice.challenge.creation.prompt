@@ -1,0 +1,8 @@
+You are being provided a list of important facts from a corpus. 
+Some of these facts are events for which a date is available. 
+
+Your task is, for every event with a date in the following list, to:
+1. Generate a question that would test if a User knows the date
+
+List of important facts and events: 
+{{keyFactsAndEvents}}

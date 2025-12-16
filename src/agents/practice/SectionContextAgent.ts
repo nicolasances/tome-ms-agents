@@ -69,22 +69,6 @@ export class SectionContextAgent extends GaleAgent<typeof SectionContextAgent.in
             juice: inputData.juice,
         }
 
-        // 3. Save the Juice Challenge for Tome
-        logger.compute(cid, `Created context for section [${inputData.sectionCode}]. Saving Juice Challenge through Tome Challenges API`, "info");
-
-        const challenge = ChallengeFactory.juiceChallenge(output);
-
-        try {
-            await new TomeChallengesAPI("tome-ms-challenges", this.config!).saveChallenge(challenge, cid);
-        } 
-        catch (error) {
-            logger.compute(cid, `Error saving Juice Challenge for section [${inputData.sectionCode}]: ${error}`, "error");
-
-            return new AgentTaskResponse("failed", cid, {
-                message: "Error saving Juice Challenge: " + (error as Error).message, 
-            } as any);
-        }
-
         // 4. Return classification result
         return new AgentTaskResponse("completed", cid, output);
     }

@@ -11,6 +11,7 @@ import { PersonalitiesConsolidationAgent } from "./agents/practice/Personalities
 import { PracticeBuilderOrchestratorAgent } from "./orchestrators/PracticeBuilderOrchestrator";
 import { SectionJuiceAgent } from "./agents/practice/SectionJuiceAgent";
 import { SectionContextAgent } from "./agents/practice/SectionContextAgent";
+import { JuiceChallengeAgent } from "./agents/practice/challenges/JuiceChallenceAgent";
 
 const galeBrokerURL = `${String(process.env.GALE_BROKER_URL)}`;
 
@@ -35,6 +36,7 @@ gale.registerAgent(new PersonalitiesConsolidationAgent());
 gale.registerAgent(new GenealogicTreeAgent());
 gale.registerAgent(new SectionJuiceAgent());
 gale.registerAgent(new SectionContextAgent());
+gale.registerAgent(new JuiceChallengeAgent());
 
 api.registerPubSubEventHandler('topic', new OnTopicEventHandler())
 
