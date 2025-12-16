@@ -39,7 +39,7 @@ export class JuiceChallengeAgent extends GaleAgent<typeof JuiceChallengeAgent.in
         inputSchema: JuiceChallengeAgent.inputSchema,
         outputSchema: JuiceChallengeAgent.outputSchema,
         description: "Agent responsible for creating Juice Challenges for Tome Topics based on section content and context.", 
-        model: "anthropic.claude-3.7-sonnet",
+        model: "amazon.nova-pro",
     };
 
     async executeTask(task: AgentTaskRequest<typeof JuiceChallengeAgent.inputSchema>): Promise<AgentTaskResponse<typeof JuiceChallengeAgent.outputSchema>> {
@@ -51,7 +51,7 @@ export class JuiceChallengeAgent extends GaleAgent<typeof JuiceChallengeAgent.in
         logger.compute(cid, `Generating Juice Challenge questions for section [${inputData.sectionCode}] for topic [${inputData.topicId} - ${inputData.topicCode}]`, "info");
 
         // 2. Prompt
-        const prompt = await this.prompt({ keyFactsAndEvents: inputData.juice });
+        const prompt = await this.prompt({ keyFactsAndEvents: JSON.stringify(inputData.juice, null, 2) });
 
         const response = await this.ai().generate({ prompt: prompt, outputSchema: this.dateTestsSchema });
 
