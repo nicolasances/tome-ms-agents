@@ -9,6 +9,6 @@ export const DateTestSchema = z.object({
     }).describe("The correct date split into day, month, and year, where available."),
 });
 
-export const FreeTextTestSchema = z.object({
+export const OpenQuestionTestSchema = z.object({
     question: z.string().describe("The question asking for a free text answer."),
 });

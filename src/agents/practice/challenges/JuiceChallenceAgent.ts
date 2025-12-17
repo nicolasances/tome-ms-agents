@@ -3,7 +3,7 @@ import { GaleAgent, GaleAgentManifest } from "../../../gale/GaleAgent";
 import { AgentTaskRequest, AgentTaskResponse } from "../../../gale/model/AgentTask";
 import { JuiceSchema } from "../../../model/JuiceSchema";
 import { SectionContextAgent } from "../SectionContextAgent";
-import { DateTestSchema } from "../../../model/TomeTestsSchema";
+import { DateTestSchema, OpenQuestionTestSchema } from "../../../model/TomeTestsSchema";
 import { ChallengeFactory } from "../../../integration/challenges/ChallengeFactory";
 import { TomeChallengesAPI } from "../../../integration/challenges/TomeChallengesAPI";
 import { API_DEPENDENCIES } from "../../../Config";
@@ -28,10 +28,12 @@ export class JuiceChallengeAgent extends GaleAgent<typeof JuiceChallengeAgent.in
         juice: z.array(JuiceSchema).describe("Main events or aspects extracted from the section content."),
         context: z.string().describe("Contextual information on the section."),
         dateTests: z.array(DateTestSchema).describe("List of date tests for the Juice Challenge."),
+        juiceQuestion: OpenQuestionTestSchema.describe("Question asking for the user to recollect the main aspects or events of this section.")
     });
 
-    dateTestsSchema = z.object({
+    llmOutputSchema = z.object({
         questions: z.array(DateTestSchema).describe("List of date questions for the provided key facts and events."),
+        juiceQuestion: OpenQuestionTestSchema.describe("Question asking for the user to recollect the main aspects or events of this section.")
     })
 
     manifest: GaleAgentManifest = {
@@ -40,7 +42,7 @@ export class JuiceChallengeAgent extends GaleAgent<typeof JuiceChallengeAgent.in
         inputSchema: JuiceChallengeAgent.inputSchema,
         outputSchema: JuiceChallengeAgent.outputSchema,
         description: "Agent responsible for creating Tests for Juice Challenges based on the key facts and events extracted from Tome sections.", 
-        model: "amazon.nova-pro",
+        model: "anthropic.claude-3.7-sonnet",
     };
 
     async executeTask(task: AgentTaskRequest<typeof JuiceChallengeAgent.inputSchema>): Promise<AgentTaskResponse<typeof JuiceChallengeAgent.outputSchema>> {
@@ -54,7 +56,7 @@ export class JuiceChallengeAgent extends GaleAgent<typeof JuiceChallengeAgent.in
         // 2. Prompt
         const prompt = await this.prompt({ keyFactsAndEvents: JSON.stringify(inputData.juice, null, 2) });
 
-        const response = await this.ai().generate({ prompt: prompt, outputSchema: this.dateTestsSchema });
+        const response = await this.ai().generate({ prompt: prompt, outputSchema: this.llmOutputSchema });
 
         const output = {
             topicId: inputData.topicId,
@@ -64,6 +66,7 @@ export class JuiceChallengeAgent extends GaleAgent<typeof JuiceChallengeAgent.in
             context: inputData.context,
             juice: inputData.juice,
             dateTests: response?.output!.questions,
+            juiceQuestion: response?.output!.juiceQuestion,
         }
 
         // 3. Save the Juice Challenge for Tome
