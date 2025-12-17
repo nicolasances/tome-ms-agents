@@ -7,7 +7,8 @@ const collections = {
 };
 
 export const API_DEPENDENCIES = {
-    tomeTopics: "tome-ms-topics"
+    tomeTopics: "tome-ms-topics",
+    tomeChallenges: "tome-ms-challenges", 
 }
 
 export class ControllerConfig extends TotoControllerConfig {

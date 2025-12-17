@@ -4,6 +4,9 @@ import { AgentTaskRequest, AgentTaskResponse } from "../../../gale/model/AgentTa
 import { JuiceSchema } from "../../../model/JuiceSchema";
 import { SectionContextAgent } from "../SectionContextAgent";
 import { DateTestSchema } from "../../../model/TomeTestsSchema";
+import { ChallengeFactory } from "../../../integration/challenges/ChallengeFactory";
+import { TomeChallengesAPI } from "../../../integration/challenges/TomeChallengesAPI";
+import { API_DEPENDENCIES } from "../../../Config";
 
 /**
  * This Agents is responsible for:
@@ -36,7 +39,7 @@ export class JuiceChallengeAgent extends GaleAgent<typeof JuiceChallengeAgent.in
         taskId: JuiceChallengeAgent.taskId,
         inputSchema: JuiceChallengeAgent.inputSchema,
         outputSchema: JuiceChallengeAgent.outputSchema,
-        description: "Agent responsible for creating Juice Challenges for Tome Topics based on section content and context.", 
+        description: "Agent responsible for creating Tests for Juice Challenges based on the key facts and events extracted from Tome sections.", 
         model: "amazon.nova-pro",
     };
 
@@ -64,20 +67,20 @@ export class JuiceChallengeAgent extends GaleAgent<typeof JuiceChallengeAgent.in
         }
 
         // 3. Save the Juice Challenge for Tome
-        // logger.compute(cid, `Created date tests for section [${inputData.sectionCode}]. Saving Juice Challenge through Tome Challenges API`, "info");
+        logger.compute(cid, `Created date tests for section [${inputData.sectionCode}]. Saving Juice Challenge through Tome Challenges API`, "info");
 
-        // const challenge = ChallengeFactory.juiceChallenge(output);
+        const challenge = ChallengeFactory.juiceChallenge(output);
 
-        // try {
-        //     await new TomeChallengesAPI("tome-ms-challenges", this.config!).saveChallenge(challenge, cid);
-        // } 
-        // catch (error) {
-        //     logger.compute(cid, `Error saving Juice Challenge for section [${inputData.sectionCode}]: ${error}`, "error");
+        try {
+            await new TomeChallengesAPI(API_DEPENDENCIES.tomeChallenges, this.config!).saveChallenge(challenge, cid);
+        } 
+        catch (error) {
+            logger.compute(cid, `Error saving Juice Challenge for section [${inputData.sectionCode}]: ${error}`, "error");
 
-        //     return new AgentTaskResponse("failed", cid, {
-        //         message: "Error saving Juice Challenge: " + (error as Error).message, 
-        //     } as any);
-        // }
+            return new AgentTaskResponse("failed", cid, {
+                message: "Error saving Juice Challenge: " + (error as Error).message, 
+            } as any);
+        }
 
         // 4. Return classification result
         return new AgentTaskResponse("completed", cid, output);

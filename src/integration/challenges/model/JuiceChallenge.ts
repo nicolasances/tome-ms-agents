@@ -1,3 +1,4 @@
+import { TomeTest } from "./tests/TomeTest";
 import { TomeChallenge } from "./TomeChallenge";
 
 export class JuiceChallenge extends TomeChallenge {
@@ -9,14 +10,16 @@ export class JuiceChallenge extends TomeChallenge {
     public sectionCode: string; 
 
     public toRemember: ToRemember[];
+    public tests: TomeTest[];
 
-    constructor({ topicId, topicCode, sectionCode, context, toRemember }: { topicId: string, topicCode: string, sectionCode: string, context: string, toRemember: ToRemember[] }) {
+    constructor({ topicId, topicCode, sectionCode, context, toRemember, tests }: { topicId: string, topicCode: string, sectionCode: string, context: string, toRemember: ToRemember[], tests: TomeTest[] }) {
         super();
         this.topicId = topicId;
         this.topicCode = topicCode;
         this.sectionCode = sectionCode;
         this.context = context;
         this.toRemember = toRemember;
+        this.tests = tests;
     }
 
 }
