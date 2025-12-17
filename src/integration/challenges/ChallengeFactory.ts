@@ -22,9 +22,6 @@ export class ChallengeFactory {
             question: data.juiceQuestion.question
         }));
 
-        console.log(tests);
-        
-
         return new JuiceChallenge({
             topicId: data.topicId,
             topicCode: data.topicCode,
