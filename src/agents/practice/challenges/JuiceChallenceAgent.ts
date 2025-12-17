@@ -61,7 +61,7 @@ export class JuiceChallengeAgent extends GaleAgent<typeof JuiceChallengeAgent.in
             topicCode: inputData.topicCode,
             sectionCode: inputData.sectionCode,
             sectionIndex: inputData.sectionIndex,
-            context: response?.output!.context,
+            context: inputData.context,
             juice: inputData.juice,
             dateTests: response?.output!.questions,
         }
@@ -72,7 +72,12 @@ export class JuiceChallengeAgent extends GaleAgent<typeof JuiceChallengeAgent.in
         const challenge = ChallengeFactory.juiceChallenge(output);
 
         try {
-            await new TomeChallengesAPI(API_DEPENDENCIES.tomeChallenges, this.config!).saveChallenge(challenge, cid);
+            const response = await new TomeChallengesAPI(API_DEPENDENCIES.tomeChallenges, this.config!).saveChallenge(challenge, cid) as any;
+
+            if (response && response.body && response.body.code && response.body.code != 200) {
+                return new AgentTaskResponse("failed", task.correlationId!, response);
+            }
+            
         } 
         catch (error) {
             logger.compute(cid, `Error saving Juice Challenge for section [${inputData.sectionCode}]: ${error}`, "error");

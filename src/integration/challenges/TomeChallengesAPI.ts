@@ -10,7 +10,10 @@ export class TomeChallengesAPI extends TotoAPI {
 }
 
 class SaveChallengeResponse {
+
+    constructor(public body: any) {}
+
     static fromParsedHTTPResponseBody(body: any): SaveChallengeResponse {
-        return new SaveChallengeResponse();
+        return new SaveChallengeResponse(body);
     }
 }
