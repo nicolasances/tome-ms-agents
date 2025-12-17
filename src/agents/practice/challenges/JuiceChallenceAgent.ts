@@ -2,8 +2,6 @@ import { z } from "genkit";
 import { GaleAgent, GaleAgentManifest } from "../../../gale/GaleAgent";
 import { AgentTaskRequest, AgentTaskResponse } from "../../../gale/model/AgentTask";
 import { JuiceSchema } from "../../../model/JuiceSchema";
-import { TomeChallengesAPI } from "../../../integration/challenges/TomeChallengesAPI";
-import { ChallengeFactory } from "../../../integration/challenges/ChallengeFactory";
 import { SectionContextAgent } from "../SectionContextAgent";
 import { DateTestSchema } from "../../../model/TomeTestsSchema";
 
