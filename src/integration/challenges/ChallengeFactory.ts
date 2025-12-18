@@ -25,6 +25,7 @@ export class ChallengeFactory {
         return new JuiceChallenge({
             topicId: data.topicId,
             topicCode: data.topicCode,
+            sectionIndex: data.sectionIndex,
             sectionCode: data.sectionCode,
             context: data.context,
             toRemember: data.juice.map(item => ({

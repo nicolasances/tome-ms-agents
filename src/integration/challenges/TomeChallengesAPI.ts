@@ -1,4 +1,4 @@
-import { RegistryCache, TotoAPI, TotoAPIRequest } from "toto-api-controller";
+import { TotoAPI, TotoAPIRequest } from "toto-api-controller";
 import { TomeChallenge } from "./model/TomeChallenge";
 
 export class TomeChallengesAPI extends TotoAPI {
