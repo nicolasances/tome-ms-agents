@@ -3,7 +3,8 @@ import { TomeChallenge } from "./TomeChallenge";
 
 export class JuiceChallenge extends TomeChallenge {
 
-    public type: string = "juice";
+    public type: string = "section";
+    public code: string = "juice";
     public context: string;
     public topicId: string;
     public topicCode: string;

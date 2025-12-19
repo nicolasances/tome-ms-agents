@@ -4,6 +4,7 @@
  */
 export abstract class TomeChallenge {
 
+    public abstract code: string;
     public abstract type: string;
     public abstract context: string; 
     public abstract topicId: string;

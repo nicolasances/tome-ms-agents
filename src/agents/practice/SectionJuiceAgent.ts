@@ -48,10 +48,7 @@ export class SectionJuiceAgent extends GaleAgent<typeof SectionJuiceAgent.inputS
 
         const response = await this.ai().generate({ prompt: prompt, outputSchema: z.array(JuiceSchema).describe("Main events or aspects extracted from the section content.") });
 
-        // 3. Create Juice Challenge for Tome
-
-
-        // 4. Return classification result
+        // 3. Return classification result
         return new AgentTaskResponse("completed", cid, {
             topicId: inputData.topicId,
             topicCode: inputData.topicCode,
