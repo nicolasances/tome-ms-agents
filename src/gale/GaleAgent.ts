@@ -3,7 +3,7 @@ import { AgentTaskRequest, AgentTaskResponse, AgentTaskOrchestratorResponse } fr
 import { z } from "genkit";
 import { ValidationError } from "toto-api-controller";
 import { Prompt } from "./util/Prompt";
-import { GaleKit, ModelId } from "./gentools/GaleKit";
+import { GaleKit, LLMError, ModelId } from "./gentools/GaleKit";
 
 export abstract class GaleAgent<I extends z.ZodTypeAny, O extends z.ZodTypeAny> {
 
@@ -68,6 +68,12 @@ export abstract class GaleAgent<I extends z.ZodTypeAny, O extends z.ZodTypeAny> 
             return response;
 
         } catch (error) {
+
+            if (error instanceof LLMError && error.code === "llmOutputTypError") {
+                this.logger?.compute(cid, `LLM output type error: ${(error as Error).message}`, "error");
+
+                return new AgentTaskResponse("failed", cid, error as LLMError);
+            }
 
             this.logger?.compute(cid, `Task execution error: ${(error as Error).message}`, "error");
             return new AgentTaskResponse("failed", cid, null as any);

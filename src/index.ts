@@ -10,10 +10,13 @@ import { GenealogicTreeAgent } from "./agents/practice/GenealogicTreeAgent";
 import { PersonalitiesConsolidationAgent } from "./agents/practice/PersonalitiesConsolidationAgent";
 import { PracticeBuilderOrchestratorAgent } from "./orchestrators/PracticeBuilderOrchestrator";
 import { SectionJuiceAgent } from "./agents/practice/SectionJuiceAgent";
+import { SectionContextAgent } from "./agents/practice/SectionContextAgent";
+import { JuiceChallengeAgent } from "./agents/practice/challenges/JuiceChallenceAgent";
+import { JuiceAnswerEvalAgent } from "./agents/practice/tests/JuiceAnswerEvalAgent";
 
 const galeBrokerURL = `${String(process.env.GALE_BROKER_URL)}`;
 
-const config = new ControllerConfig({ apiName: "tome-ms-agents" }, galeBrokerURL, {defaultHyperscaler: "aws", defaultSecretsManagerLocation: "aws"});
+const config = new ControllerConfig({ apiName: "tome-ms-agents" }, galeBrokerURL, { defaultHyperscaler: "aws", defaultSecretsManagerLocation: "aws" });
 
 const api = new TotoAPIController(config, { basePath: '/tomeagents' });
 api.registerPubSubImplementation(new DevQImpl(config, config.logger!));
@@ -33,6 +36,9 @@ gale.registerAgent(new SectionTimelineAgent());
 gale.registerAgent(new PersonalitiesConsolidationAgent());
 gale.registerAgent(new GenealogicTreeAgent());
 gale.registerAgent(new SectionJuiceAgent());
+gale.registerAgent(new SectionContextAgent());
+gale.registerAgent(new JuiceChallengeAgent());
+gale.registerAgent(new JuiceAnswerEvalAgent());
 
 api.registerPubSubEventHandler('topic', new OnTopicEventHandler())
 

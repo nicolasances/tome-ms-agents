@@ -1,5 +1,5 @@
 import { Genkit, genkit, z } from "genkit";
-import { amazonNovaLiteV1, amazonNovaProV1, anthropicClaude37SonnetV1, awsBedrock } from "../../genkit/index";
+import { amazonNovaLiteV1, amazonNovaProV1, anthropicClaude37SonnetV1, awsBedrock } from "genkitx-aws-bedrock";
 
 const SUPPORTED_MODELS = ["anthropic.claude-3.7-sonnet", "amazon.nova-pro", "amazon.nova-lite"] as const;
 
@@ -29,7 +29,19 @@ export class GaleKit {
      */
     async generate(prompt: Prompt) {
 
-        return this.llm.generate({ prompt: prompt.prompt, output: { schema: prompt.outputSchema } });
+        try {
+            const r = await this.llm.generate({ prompt: prompt.prompt, output: { schema: prompt.outputSchema } });
+            return r;
+            
+        } catch (error) {
+            
+            // If the errror is an "Schema validation failed" error, we rethrow it as is for the caller to handle it
+            if ((error as Error).message.includes("Schema validation failed")) {
+                throw new LLMError("llmOutputTypError", (error as Error).message);
+            }
+
+            throw error;
+        }
     }
 
     static getSupportedModels(): ModelId[] {
@@ -61,9 +73,27 @@ function getModel(modeId: ModelId, region: string) {
             return anthropicClaude37SonnetV1(region);
         case "amazon.nova-pro":
             return amazonNovaProV1(region);
-        case "amazon.nova-lite": 
+        case "amazon.nova-lite":
             return amazonNovaLiteV1;
         default:
             throw new Error(`Unsupported model id: ${modeId}`);
     }
 }
+
+export class LLMError extends Error {
+
+    code: LLMErrorCode;
+    message: string;
+
+    constructor(code: LLMErrorCode, message: string) {
+        super(message);
+
+        this.code = code;
+        this.name = "LLMError";
+        this.message = message;
+
+    }
+
+}
+
+export type LLMErrorCode = "llmOutputTypError";

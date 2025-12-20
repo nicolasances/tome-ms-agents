@@ -2,6 +2,7 @@ import { ExecutionContext, ITotoPubSubEventHandler, newTotoServiceToken, TotoMes
 import { GaleBrokerAPI } from "../gale/integration/GaleBrokerAPI";
 import { ControllerConfig } from "../Config";
 import { AgentTaskRequest } from "../gale/model/AgentTask";
+import { PracticeBuilderOrchestratorAgent } from "../orchestrators/PracticeBuilderOrchestrator";
 
 /**
  * Event handler for 'topic' events.
@@ -10,6 +11,9 @@ export class OnTopicEventHandler implements ITotoPubSubEventHandler {
 
     async onEvent(msg: TotoMessage, execContext: ExecutionContext): Promise<any> {
 
+        const logger = execContext.logger;
+        const cid = msg.cid || "no-cid";
+
         if (msg.type === TOPIC_EVENTS.topicScraped) {
 
             // Get a JWT Token
@@ -17,15 +21,18 @@ export class OnTopicEventHandler implements ITotoPubSubEventHandler {
 
             // Create the task
             const task: AgentTaskRequest<any> = {
-                taskId: "topic.practice.build",
-                command: { command: 'start' }, 
+                taskId: PracticeBuilderOrchestratorAgent.taskId,
+                command: { command: 'start' },
                 taskInputData: {
+                    topicId: msg.data.topicId,
                     topicCode: msg.data.topicCode
                 }
             }
 
             // Trigger a Practice Builder Agent task
-            await new GaleBrokerAPI((execContext.config as ControllerConfig).galeBrokerURL, execContext).postTask(task, token);
+            const result = await new GaleBrokerAPI((execContext.config as ControllerConfig).galeBrokerURL, execContext).postTask(task, token);
+
+            logger.compute(cid, `Triggered task ${task.taskId} on topic [${msg.data.topicCode}]. Task Output: [${result.taskOutput}].`, "info");
         }
 
         return { consumed: false }

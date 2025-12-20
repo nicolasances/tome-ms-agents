@@ -5,7 +5,7 @@ import { GaleOrchestrator } from "../gale/orchestrator/GaleOrchestrator";
 import { AgenticFlow, AgentNode, BranchNode, GroupNode } from "../gale/model/AgenticFlow";
 import { GenealogicTreeAgent } from "../agents/practice/GenealogicTreeAgent";
 import { PersonalitiesConsolidationAgent } from "../agents/practice/PersonalitiesConsolidationAgent";
-import { classificationAgents, sectionGenealogyAgents, sectionJuiceAgents, sectionTimelineAgents } from "./providers/PracticeBuildAgentsProvider";
+import { classificationAgents, juiceChallengeAgents, sectionContextAgents, sectionGenealogyAgents, sectionJuiceAgents, sectionTimelineAgents } from "./providers/PracticeBuildAgentsProvider";
 import { SectionGenealogyAgent } from "../agents/practice/SectionGenealogyAgent";
 
 /**
@@ -41,55 +41,25 @@ export class PracticeBuilderOrchestratorAgent extends GaleOrchestratorAgent<type
         inputSchema: PracticeBuilderOrchestratorAgent.inputSchema,
         outputSchema: PracticeBuilderOrchestratorAgent.outputSchema,
         resumeInputSchema: PracticeBuilderOrchestratorAgent.resumeInputSchema,
-        description: "Orchestrator Agent that builds a complete Tome Practice for a given Topic by coordinating multiple sub-agents."
+        description: "Orchestrator Agent that builds a complete Tome Practice for a given Topic by coordinating multiple sub-agents.",
+        model: "amazon.nova-lite",
     };
 
     private flow = new AgenticFlow(
         new GroupNode({
             groupId: "sections-classification-group",
             agentsProvider: classificationAgents,
-            next: new BranchNode({
-                branches: [
-                    {
-                        branchId: "sections-genealogy-branch",
-                        branch: new GroupNode({
-                            groupId: "sections-genealogy-group",
-                            agentsProvider: sectionGenealogyAgents,
-                            next: new BranchNode({
-                                branches: [
-                                    {
-                                        branchId: "genealogy-personalities-branch",
-                                        branch: new AgentNode<typeof PersonalitiesConsolidationAgent.inputSchema>({
-                                            taskId: PersonalitiesConsolidationAgent.taskId,
-                                            taskInputMapper: (input: ResumeTaskInputData) => ({topicId: input.originalInput.topicId, topicCode: input.originalInput.topicCode, peopleDescriptions: (input.childrenOutputs as z.infer<typeof SectionGenealogyAgent.outputSchema>[]).flatMap(co => co.info.people)})
-                                        })
-                                    },
-                                    {
-                                        branchId: "genealogy-tree-branch",
-                                        branch: new AgentNode<typeof GenealogicTreeAgent.inputSchema>({
-                                            taskId: GenealogicTreeAgent.taskId,
-                                            taskInputMapper: (input: ResumeTaskInputData) => ({topicId: input.originalInput.topicId, topicCode: input.originalInput.topicCode, relationships: (input.childrenOutputs as z.infer<typeof SectionGenealogyAgent.outputSchema>[]).flatMap(co => co.info.genealogies), peopleDescriptions: (input.childrenOutputs as z.infer<typeof SectionGenealogyAgent.outputSchema>[]).flatMap(co => co.info.people)})
-                                        })
-                                    }
-                                ]
-                            })
-                        })
-                    },
-                    {
-                        branchId: "sections-timeline-branch",
-                        branch: new GroupNode({
-                            groupId: "sections-timeline-group",
-                            agentsProvider: sectionTimelineAgents, 
-                        })
-                    }, 
-                    {
-                        branchId: "section-juice-branch",
-                        branch: new GroupNode({
-                            groupId: "sections-juice-group",
-                            agentsProvider: sectionJuiceAgents, 
-                        })
-                    }
-                ]
+            next: new GroupNode({
+                groupId: "sections-juice-group",
+                agentsProvider: sectionJuiceAgents,
+                next: new GroupNode({
+                    groupId: "sections-context-group",
+                    agentsProvider: sectionContextAgents,
+                    next: new GroupNode({
+                        groupId: "juice-challenges-group",
+                        agentsProvider: juiceChallengeAgents,
+                    })
+                })
             })
         })
     )
@@ -97,10 +67,9 @@ export class PracticeBuilderOrchestratorAgent extends GaleOrchestratorAgent<type
     async executeTask(task: AgentTaskRequest<typeof PracticeBuilderOrchestratorAgent.inputSchema | typeof PracticeBuilderOrchestratorAgent.resumeInputSchema>): Promise<AgentTaskOrchestratorResponse<typeof PracticeBuilderOrchestratorAgent.outputSchema>> {
 
         const cid = task.correlationId;
-        
-        
+
         const flow = new GaleOrchestrator(this.flow, cid!, this.execContext!);
-        
+
         if (task.command.command === "start") {
             return await flow.start(task.taskInputData);
         }

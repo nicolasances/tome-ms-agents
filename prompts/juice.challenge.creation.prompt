@@ -1,0 +1,12 @@
+You are being provided a list of important facts from a corpus. 
+Some of these facts are events for which a date is available. 
+
+Your task is to generate the following:
+1. For every event THAT EXPLICITLY HAS A DATE in the below list of facts and events, generate a question that would test if a User knows the date
+2. For this text as a whole, generate a simple question that asks the User to recollect the core events or aspects contained in the text. DO NOT LEAK information in the key facts and events list below. Stay relatively generic, make sure that you don't give too much information that would lead the User to answer things that are not in the below list. 
+
+IMPORTANT RULES TO FOLLOW: 
+- Do not add dates that are not explicitly present in the below list.
+
+List of important facts and events: 
+{{keyFactsAndEvents}}

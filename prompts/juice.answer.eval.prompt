@@ -1,0 +1,12 @@
+You are asked to evaluate how much a user's answer to a question is close to the expected answer. 
+You are given: 
+1. The expected answer, as a series of elements that are important
+2. The user answer
+
+Expected elements to be found in answer:
+{{importantElements}}
+
+User answer:
+{{userAnswer}}
+
+Your task is to evaluate how many of the important aspects have been adequately covered by the user's answer. Aspects that you think are partially covered should not be counted.

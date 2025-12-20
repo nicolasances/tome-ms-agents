@@ -2,6 +2,7 @@ import { z } from "genkit";
 import { GaleAgent, GaleAgentManifest } from "../../gale/GaleAgent";
 import { AgentTaskRequest, AgentTaskResponse } from "../../gale/model/AgentTask";
 import { TomeKnowledgeBase } from "../../tomekb/TomeKnowledgeBase";
+import { JuiceSchema } from "../../model/JuiceSchema";
 
 export class SectionJuiceAgent extends GaleAgent<typeof SectionJuiceAgent.inputSchema, typeof SectionJuiceAgent.outputSchema> {
 
@@ -14,23 +15,12 @@ export class SectionJuiceAgent extends GaleAgent<typeof SectionJuiceAgent.inputS
         sectionIndex: z.number().describe("Index of the section within the topic."),
     });
 
-    static juiceSchema = z.array(
-        z.object({
-            toRemember: z.string().describe("An important aspect, fact, event to remember."),
-            date: z.object({
-                year: z.number().optional().describe("Year of the timeline event as an integer."),
-                month: z.number().optional().describe("Month of the timeline event as an integer (1-12)."),
-                day: z.number().optional().describe("Day of the month of the timeline event as an integer (1-31)."),
-            }).optional().describe("Date associated with the event, aspect or fact to remember, if any date is available for this event in the text."),
-        })
-    )
-
     static outputSchema = z.object({
         topicId: z.string().describe("Unique identifier (database ID) of the Tome Topic."),
         topicCode: z.string().describe("Unique code of the Tome Topic."),
         sectionCode: z.string().describe("Code of the section that was classified."),
         sectionIndex: z.number().describe("Index of the section within the topic."),
-        juice: SectionJuiceAgent.juiceSchema.describe("Timeline events extracted from the section content."),
+        juice: z.array(JuiceSchema).describe("Main events or aspects extracted from the section content."),
     });
 
     manifest: GaleAgentManifest = {
@@ -38,8 +28,8 @@ export class SectionJuiceAgent extends GaleAgent<typeof SectionJuiceAgent.inputS
         taskId: SectionJuiceAgent.taskId,
         inputSchema: SectionJuiceAgent.inputSchema,
         outputSchema: SectionJuiceAgent.outputSchema,
-        description: "Agent for extracting the most important information from sections of a Tome Topic. This agent analyzes the content of a section and summarizes the key events, facts, characters, and dates that are essential to remember.", 
-        model: "anthropic.claude-3.7-sonnet",
+        description: "Agent for extracting the most important information from sections of a Tome Topic. This agent analyzes the content of a section and summarizes the key events, facts, characters, and dates that are essential to remember.",
+        model: "amazon.nova-pro",
     };
 
     async executeTask(task: AgentTaskRequest<typeof SectionJuiceAgent.inputSchema>): Promise<AgentTaskResponse<typeof SectionJuiceAgent.outputSchema>> {
@@ -47,8 +37,6 @@ export class SectionJuiceAgent extends GaleAgent<typeof SectionJuiceAgent.inputS
         const cid = task.correlationId || "no-cid";
         const logger = this.logger!;
         const inputData = task.taskInputData! as z.infer<typeof SectionJuiceAgent.inputSchema>;
-
-        const ai = this.ai();
 
         logger.compute(cid, `Detecting timeline in section [${inputData.sectionCode}] for topic [${inputData.topicId} - ${inputData.topicCode}]`, "info");
 
@@ -58,7 +46,7 @@ export class SectionJuiceAgent extends GaleAgent<typeof SectionJuiceAgent.inputS
         // 2. Prompt
         const prompt = await this.prompt({ sectionContent });
 
-        const response = await ai.generate({ prompt: prompt, outputSchema: SectionJuiceAgent.juiceSchema });
+        const response = await this.ai().generate({ prompt: prompt, outputSchema: z.array(JuiceSchema).describe("Main events or aspects extracted from the section content.") });
 
         // 3. Return classification result
         return new AgentTaskResponse("completed", cid, {
@@ -66,7 +54,7 @@ export class SectionJuiceAgent extends GaleAgent<typeof SectionJuiceAgent.inputS
             topicCode: inputData.topicCode,
             sectionCode: inputData.sectionCode,
             sectionIndex: inputData.sectionIndex,
-            juice: response.output!
+            juice: response?.output!
         });
     }
 }
