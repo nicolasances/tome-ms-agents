@@ -20,6 +20,7 @@ export class PracticeBuilderOrchestratorAgent extends GaleOrchestratorAgent<type
     static inputSchema = z.object({
         topicId: z.string().describe("Unique identifier (database ID) of the Tome Topic to build practice for."),
         topicCode: z.string().describe("Unique code of the Tome Topic to build practice for. E.g. the-merovingians"),
+        sections: z.array(z.string()).nullable().describe("(Optional) List of section codes defined for the topic."),
     });
 
     static resumeInputSchema = z.object({
