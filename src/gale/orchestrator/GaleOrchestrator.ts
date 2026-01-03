@@ -9,7 +9,7 @@ export class GaleOrchestrator {
 
     constructor(private flow: AgenticFlow, private correlationId: string, private execContext: ExecutionContext) {
         this.logger = execContext.logger;
-     }
+    }
 
     /**
      * Starts the orchestrator flow.
@@ -18,14 +18,22 @@ export class GaleOrchestrator {
      */
     async start(input: any): Promise<AgentTaskOrchestratorResponse<any>> {
 
-        // Start processing the flow
-        const root = this.flow.root;
+        try {
 
-        if (root.getType() == "group") return this.processGroup(root as GroupNode, input);
-        else if (root.getType() == 'branch') return this.processBranch(root as BranchNode, input);
-        else if (root.getType() == 'agent') return this.processAgent(root as AgentNode<any>, input);
+            // Start processing the flow
+            const root = this.flow.root;
 
-        throw new TotoRuntimeError(500, `Root node type [${root.getType()}] not supported in Gale Orchestrator.`);
+            if (root.getType() == "group") return this.processGroup(root as GroupNode, input);
+            else if (root.getType() == 'branch') return this.processBranch(root as BranchNode, input);
+            else if (root.getType() == 'agent') return this.processAgent(root as AgentNode<any>, input);
+
+            throw new TotoRuntimeError(500, `Root node type [${root.getType()}] not supported in Gale Orchestrator.`);
+
+        } catch (error) {
+
+            return new AgentTaskOrchestratorResponse("failed", this.correlationId, { error: error });
+
+        }
     }
 
     /**
@@ -36,25 +44,33 @@ export class GaleOrchestrator {
      */
     async resume(input: any, command: ResumeCommand): Promise<AgentTaskOrchestratorResponse<any>> {
 
-        this.logger.compute(this.correlationId, `Resuming Gale Orchestrator for correlationId [${this.correlationId}] after completion of group [${command.completedTaskGroupId}]`, "info");
+        try {
 
-        // Find what to process next. The resume command contains the group Id that was completed => process the "next" of that group.
-        const completedNode = this.flow.findNode(command.completedTaskGroupId);
+            this.logger.compute(this.correlationId, `Resuming Gale Orchestrator for correlationId [${this.correlationId}] after completion of group [${command.completedTaskGroupId}]`, "info");
 
-        this.logger.compute(this.correlationId, `Found completed node of type [${completedNode?.getType()}] for groupId [${command.completedTaskGroupId}]`, "info");
+            // Find what to process next. The resume command contains the group Id that was completed => process the "next" of that group.
+            const completedNode = this.flow.findNode(command.completedTaskGroupId);
 
-        const nextNode = completedNode?.getNext();
+            this.logger.compute(this.correlationId, `Found completed node of type [${completedNode?.getType()}] for groupId [${command.completedTaskGroupId}]`, "info");
 
-        this.logger.compute(this.correlationId, `Next node to process is of type [${nextNode?.getType()}]`, "info");
+            const nextNode = completedNode?.getNext();
 
-        if (nextNode) {
-            if (nextNode.getType() == "group") return this.processGroup(nextNode as GroupNode, input);
-            else if (nextNode.getType() == 'branch') return this.processBranch(nextNode as BranchNode, input);
-            else if (nextNode.getType() == 'agent') return this.processAgent(nextNode as AgentNode<any>, input);
-            else throw new TotoRuntimeError(500, `Next node type [${nextNode.getType()}] not supported in Gale Orchestrator.`);
+            this.logger.compute(this.correlationId, `Next node to process is of type [${nextNode?.getType()}]`, "info");
+
+            if (nextNode) {
+                if (nextNode.getType() == "group") return this.processGroup(nextNode as GroupNode, input);
+                else if (nextNode.getType() == 'branch') return this.processBranch(nextNode as BranchNode, input);
+                else if (nextNode.getType() == 'agent') return this.processAgent(nextNode as AgentNode<any>, input);
+                else throw new TotoRuntimeError(500, `Next node type [${nextNode.getType()}] not supported in Gale Orchestrator.`);
+            }
+
+            return new AgentTaskOrchestratorResponse("completed", this.correlationId, { done: true, msg: `Nothing to do after group ${command.completedTaskGroupId}` });
+
+        } catch (error) {
+
+            return new AgentTaskOrchestratorResponse("failed", this.correlationId, { error: error });
+
         }
-
-        return new AgentTaskOrchestratorResponse("completed", this.correlationId, { done: true, msg: `Nothing to do after group ${command.completedTaskGroupId}` });
 
     }
 
