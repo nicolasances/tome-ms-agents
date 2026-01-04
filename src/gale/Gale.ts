@@ -5,13 +5,21 @@ import { GaleAgentInfoDelegate, GaleAgentTaskDelegate } from "./GaleAgentDelegat
 import { GaleBrokerAPI } from "./integration/GaleBrokerAPI";
 import { TaskEndpoint } from "./model/TaskEndpoint";
 import { AgentDefinition } from "./model/AgentDefinition";
+import { GaleAgentsRegistrationDelegate } from "./GaleAgentsRegistrationDelegate";
 
 export class Gale {
 
     logger: Logger;
+    
+    public agentDefinitions: AgentDefinition[] = [];
 
     constructor(private config: GaleConfig, private options?: GaleOptions) {
         this.logger = new Logger("Gale");
+
+        if (this.options?.totoApiController) {
+
+            this.options.totoApiController.path('POST', '/agentRegistrations', new GaleAgentsRegistrationDelegate(this));
+        }
     }
 
     async registerAgent(agent: GaleAgent<any, any>): Promise<void> {
@@ -41,9 +49,13 @@ export class Gale {
         this.logger.compute("", `Registering Agent [ ${agent.manifest.agentName} ] for task [ ${agent.manifest.taskId} ] with Gale Broker at [ ${this.config.galeBrokerURL} ].`, "info");
         this.logger.compute("", `Agent [ ${agent.manifest.agentName} ] endpoint set to [ ${agentEndpoint} ].`, "info");
 
-        // Create the Agent Definition and register it
+        // Create the Agent Definition 
         const agentDefinition = new AgentDefinition(agent.manifest, new TaskEndpoint(agentEndpoint));
 
+        // Save the agent
+        this.agentDefinitions.push(agentDefinition);
+
+        // Register the agent using Gale Broker API
         const registrationResult = await new GaleBrokerAPI(this.config.galeBrokerURL).registerAgent({
             agentDefinition: agentDefinition
         });
