@@ -33,7 +33,7 @@ gale.registerAgent(new PracticeBuilderOrchestratorAgent());
 gale.registerAgent(new SectionClassificationAgent());
 gale.registerAgent(new SectionGenealogyAgent());
 gale.registerAgent(new SectionTimelineAgent());
-gale.registerAgent(new PersonalitiesConsolidationAgent());
+// gale.registerAgent(new PersonalitiesConsolidationAgent());
 // gale.registerAgent(new GenealogicTreeAgent());
 gale.registerAgent(new SectionJuiceAgent());
 gale.registerAgent(new SectionContextAgent());
