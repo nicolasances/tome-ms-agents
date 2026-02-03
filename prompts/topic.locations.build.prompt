@@ -1,0 +1,9 @@
+Your task is to analyze the following content and determine the geographic locations covered by this topic. 
+
+Important Rules: 
+- Only select the main locations. 
+- Order the locations by order of importance. The first location should be the one that the Topic most obviously refers to. 
+- If there are doubts, order locations by frequency
+
+This is the summarized content of the topic: 
+{{topicJuice}}
