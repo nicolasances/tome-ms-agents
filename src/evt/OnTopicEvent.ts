@@ -25,7 +25,8 @@ export class OnTopicEventHandler implements ITotoPubSubEventHandler {
                 command: { command: 'start' },
                 taskInputData: {
                     topicId: msg.data.topicId,
-                    topicCode: msg.data.topicCode
+                    topicCode: msg.data.topicCode,
+                    sections: msg.data.sections
                 }
             }
 

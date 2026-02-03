@@ -19,11 +19,18 @@ export async function classificationAgents(input: z.infer<typeof PracticeBuilder
     const config = execContext.config as ControllerConfig;
     const cid = execContext.cid;
 
-    const topic = await new TomeTopicsAPI(API_DEPENDENCIES.tomeTopics, config).getTopic(input.topicId, cid);
+    let sectionCodes = input.sections;
 
-    if (!topic || !topic.sections || topic.sections.length === 0) throw new TotoRuntimeError(500, `Topic [${input.topicId}] has no sections defined.`);
+    if (!sectionCodes || sectionCodes.length === 0) {
+        // Fetch the topic to get its sections
+        const topic = await new TomeTopicsAPI(API_DEPENDENCIES.tomeTopics, config).getTopic(input.topicId, cid);
 
-    return topic.sections.map((section, index) =>
+        if (!topic || !topic.sections || topic.sections.length === 0) throw new TotoRuntimeError(500, `Topic [${input.topicId}] has no sections defined.`);
+
+        sectionCodes = topic.sections;
+    }
+
+    return sectionCodes.map((section, index) =>
         new AgentNode<typeof SectionClassificationAgent.inputSchema>({
             taskId: SectionClassificationAgent.taskId,
             taskInputData: {
