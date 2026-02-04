@@ -32,7 +32,7 @@ export class TopicGeographyAgent extends GaleAgent<typeof TopicGeographyAgent.in
         inputSchema: TopicGeographyAgent.inputSchema,
         outputSchema: TopicGeographyAgent.outputSchema,
         description: "Agent that determines which geographical locations are mostly covered by this Topic. Some Topics are specific to certain locations, while others are broader and refer to multiple locations.", 
-        model: "amazon.nova-lite",
+        model: "amazon.nova-pro",
     };
 
     async executeTask(task: AgentTaskRequest<typeof TopicGeographyAgent.inputSchema>): Promise<AgentTaskResponse<typeof TopicGeographyAgent.outputSchema>> {
