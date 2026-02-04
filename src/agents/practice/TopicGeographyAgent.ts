@@ -1,10 +1,8 @@
 import { z } from "genkit";
 import { GaleAgent, GaleAgentManifest } from "../../gale/GaleAgent";
 import { AgentTaskRequest, AgentTaskResponse } from "../../gale/model/AgentTask";
-import { GenealogicTreeSchema, RelationshipSchema } from "../../model/GenealogicTreeSchema";
-import { PersonalitySchema } from "../../model/PersonalitiesSchema";
 import { JuiceSchema } from "../../model/JuiceSchema";
-import { TopicGeographicalLocation } from "../../model/TopicGeographicalLocationSchema";
+import { GeographicAreas, TopicGeographicalLocation } from "../../model/TopicGeographicalLocationSchema";
 
 
 export class TopicGeographyAgent extends GaleAgent<typeof TopicGeographyAgent.inputSchema, typeof TopicGeographyAgent.outputSchema> {
@@ -44,20 +42,20 @@ export class TopicGeographyAgent extends GaleAgent<typeof TopicGeographyAgent.in
 
         const ai = this.ai();
 
-        logger.compute(cid, `Consolidating genealogy for topic [${inputData.topicId} - ${inputData.topicCode}]`, "info");
+        logger.compute(cid, `Determining geography information for topic [${inputData.topicId} - ${inputData.topicCode}]`, "info");
 
         const prompt = await this.prompt({ 
-            relationships: JSON.stringify(task.taskInputData!.relationships, null, 2),
-            peopleDescriptions: JSON.stringify(task.taskInputData!.peopleDescriptions, null, 2)
+            geographicAreas: JSON.stringify(GeographicAreas), 
+            topicJuice: JSON.stringify(inputData.juice, null, 2)
         });
 
-        const response = await ai.generate({ prompt: prompt, outputSchema: TopicGeographyAgent.genealogicTrees });
+        const response = await ai.generate({ prompt: prompt, outputSchema: TopicGeographyAgent.topicLocations });
 
         // 3. Return classification result
         return new AgentTaskResponse("completed", cid, {
             topicId: inputData.topicId,
             topicCode: inputData.topicCode,
-            genealogicTrees: response.output!
+            locations: response.output!
         });
     }
 }
