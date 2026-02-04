@@ -5,8 +5,9 @@ import { GaleOrchestrator } from "../gale/orchestrator/GaleOrchestrator";
 import { AgenticFlow, AgentNode, BranchNode, GroupNode } from "../gale/model/AgenticFlow";
 import { GenealogicTreeAgent } from "../agents/practice/GenealogicTreeAgent";
 import { PersonalitiesConsolidationAgent } from "../agents/practice/PersonalitiesConsolidationAgent";
-import { classificationAgents, juiceChallengeAgents, sectionContextAgents, sectionGenealogyAgents, sectionJuiceAgents, sectionTimelineAgents } from "./providers/PracticeBuildAgentsProvider";
+import { classificationAgents, juiceChallengeAgents, sectionContextAgents, sectionGenealogyAgents, sectionJuiceAgents, sectionTimelineAgents, topicGeographyInputMapper } from "./providers/PracticeBuildAgentsProvider";
 import { SectionGenealogyAgent } from "../agents/practice/SectionGenealogyAgent";
+import { TopicGeographyAgent } from "../agents/practice/TopicGeographyAgent";
 
 /**
  * This agent is the ORCHESTRATOR for building practices for a give Tome Topic.
@@ -53,15 +54,30 @@ export class PracticeBuilderOrchestratorAgent extends GaleOrchestratorAgent<type
             next: new GroupNode({
                 groupId: "sections-juice-group",
                 agentsProvider: sectionJuiceAgents,
-                next: new GroupNode({
-                    groupId: "sections-context-group",
-                    agentsProvider: sectionContextAgents,
-                    next: new GroupNode({
-                        groupId: "juice-challenges-group",
-                        agentsProvider: juiceChallengeAgents,
-                    })
+                next: new BranchNode({
+                    branches: [
+                        {
+                            branchId: "context-branch",
+                            branch: new GroupNode({
+                                groupId: "sections-context-group",
+                                agentsProvider: sectionContextAgents,
+                                next: new GroupNode({
+                                    groupId: "juice-challenges-group",
+                                    agentsProvider: juiceChallengeAgents,
+                                })
+                            })
+                        }, 
+                        {
+                            branchId: "enrichment-branch",
+                            branch: new AgentNode({
+                                taskId: TopicGeographyAgent.taskId, 
+                                taskInputMapper: topicGeographyInputMapper
+                            })
+                        }
+                    ]
                 })
             })
+
         })
     )
 

@@ -10,6 +10,8 @@ import { SectionTimelineAgent } from "../../agents/practice/SectionTimelineAgent
 import { SectionJuiceAgent } from "../../agents/practice/SectionJuiceAgent";
 import { SectionContextAgent } from "../../agents/practice/SectionContextAgent";
 import { JuiceChallengeAgent } from "../../agents/practice/challenges/JuiceChallenceAgent";
+import { ResumeTaskInputData, StartTaskInputData } from "../../gale/model/AgentTask";
+import { TopicGeographyAgent } from "../../agents/practice/TopicGeographyAgent";
 
 /**
  * Provides agents for the classification group in the practice build orchestrator.
@@ -186,4 +188,28 @@ export async function juiceChallengeAgents(input: z.infer<typeof PracticeBuilder
             } as z.infer<typeof JuiceChallengeAgent.inputSchema>,
         })
     );
+}
+
+/**
+ * Maps the input data to the TopicGeographyAgent input schema.
+ * 
+ * Input data is expected to be a list of SectionJuiceAgent.outputSchema
+ */
+export function topicGeographyInputMapper(input: StartTaskInputData | ResumeTaskInputData): z.infer<typeof TopicGeographyAgent.inputSchema> {
+
+    let inputData = input; 
+    if (input && 'originalInput' in input) inputData = input.childrenOutputs;
+
+    // We expect input data to be a list of type SectionJuiceAgent.outputSchema
+    const castedInput = inputData as z.infer<typeof SectionJuiceAgent.outputSchema>[];
+
+    // Flatten the maps of juice items from all sections
+    const allJuiceItems = castedInput.flatMap(section => section.juice.map(juiceItem => juiceItem.toRemember));
+
+    return {
+        topicId: castedInput[0]?.topicId || "unknown-topic-id",
+        topicCode: castedInput[0]?.topicCode || "unknown-topic-code",
+        juice: allJuiceItems,
+    }
+    
 }

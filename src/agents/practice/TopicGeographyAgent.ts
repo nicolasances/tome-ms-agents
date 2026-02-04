@@ -8,11 +8,12 @@ import { GeographicAreas, TopicGeographicalLocation } from "../../model/TopicGeo
 export class TopicGeographyAgent extends GaleAgent<typeof TopicGeographyAgent.inputSchema, typeof TopicGeographyAgent.outputSchema> {
 
     static taskId: string = "topic.locations.build";
+    static agentName: string = "Tome Topic Locations Agent";
 
     static inputSchema = z.object({
         topicId: z.string().describe("Unique identifier (database ID) of the Tome Topic."),
         topicCode: z.string().describe("Unique code of the Tome Topic."),
-        juice: z.array(JuiceSchema).describe("All the important aspects of the Topic."),
+        juice: z.array(z.string()).describe("All the important aspects of the Topic."),
     })
 
     static topicLocations = z.array(
@@ -26,7 +27,7 @@ export class TopicGeographyAgent extends GaleAgent<typeof TopicGeographyAgent.in
     });
 
     manifest: GaleAgentManifest = {
-        agentName: "Tome Topic Locations Agent",
+        agentName: TopicGeographyAgent.agentName,
         taskId: TopicGeographyAgent.taskId,
         inputSchema: TopicGeographyAgent.inputSchema,
         outputSchema: TopicGeographyAgent.outputSchema,
