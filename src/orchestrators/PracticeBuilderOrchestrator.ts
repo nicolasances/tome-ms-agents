@@ -3,10 +3,7 @@ import { GaleOrchestratorAgent, GaleOrchestratorAgentManifest } from "../gale/Ga
 import { AgentTaskRequest, AgentTaskOrchestratorResponse, ResumeTaskInputData, StartTaskInputData } from "../gale/model/AgentTask";
 import { GaleOrchestrator } from "../gale/orchestrator/GaleOrchestrator";
 import { AgenticFlow, AgentNode, BranchNode, GroupNode } from "../gale/model/AgenticFlow";
-import { GenealogicTreeAgent } from "../agents/practice/GenealogicTreeAgent";
-import { PersonalitiesConsolidationAgent } from "../agents/practice/PersonalitiesConsolidationAgent";
 import { classificationAgents, juiceChallengeAgents, sectionContextAgents, sectionGenealogyAgents, sectionJuiceAgents, sectionTimelineAgents, topicGeographyInputMapper } from "./providers/PracticeBuildAgentsProvider";
-import { SectionGenealogyAgent } from "../agents/practice/SectionGenealogyAgent";
 import { TopicGeographyAgent } from "../agents/practice/TopicGeographyAgent";
 
 /**

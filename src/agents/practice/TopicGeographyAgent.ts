@@ -1,8 +1,10 @@
 import { z } from "genkit";
 import { GaleAgent, GaleAgentManifest } from "../../gale/GaleAgent";
 import { AgentTaskRequest, AgentTaskResponse } from "../../gale/model/AgentTask";
-import { JuiceSchema } from "../../model/JuiceSchema";
 import { GeographicAreas, TopicGeographicalLocation } from "../../model/TopicGeographicalLocationSchema";
+import { TomeTopicsAPI } from "../../api/TomeTopicsAPI";
+import { TotoRuntimeError } from "toto-api-controller";
+import { API_DEPENDENCIES } from "../../Config";
 
 
 export class TopicGeographyAgent extends GaleAgent<typeof TopicGeographyAgent.inputSchema, typeof TopicGeographyAgent.outputSchema> {
@@ -24,6 +26,7 @@ export class TopicGeographyAgent extends GaleAgent<typeof TopicGeographyAgent.in
         topicId: z.string().describe("Unique identifier (database ID) of the Tome Topic."),
         topicCode: z.string().describe("Unique code of the Tome Topic."),
         locations: TopicGeographyAgent.topicLocations,
+        numUpdatedTopics: z.number().describe("Number of topics updated with geographical location information.")
     });
 
     manifest: GaleAgentManifest = {
@@ -31,7 +34,7 @@ export class TopicGeographyAgent extends GaleAgent<typeof TopicGeographyAgent.in
         taskId: TopicGeographyAgent.taskId,
         inputSchema: TopicGeographyAgent.inputSchema,
         outputSchema: TopicGeographyAgent.outputSchema,
-        description: "Agent that determines which geographical locations are mostly covered by this Topic. Some Topics are specific to certain locations, while others are broader and refer to multiple locations.", 
+        description: "Agent that determines which geographical locations are mostly covered by this Topic. Some Topics are specific to certain locations, while others are broader and refer to multiple locations.",
         model: "amazon.nova-pro",
     };
 
@@ -45,18 +48,37 @@ export class TopicGeographyAgent extends GaleAgent<typeof TopicGeographyAgent.in
 
         logger.compute(cid, `Determining geography information for topic [${inputData.topicId} - ${inputData.topicCode}]`, "info");
 
-        const prompt = await this.prompt({ 
-            geographicAreas: JSON.stringify(GeographicAreas), 
+        const prompt = await this.prompt({
+            geographicAreas: JSON.stringify(GeographicAreas),
             topicJuice: JSON.stringify(inputData.juice, null, 2)
         });
 
         const response = await ai.generate({ prompt: prompt, outputSchema: TopicGeographyAgent.topicLocations });
 
-        // 3. Return classification result
-        return new AgentTaskResponse("completed", cid, {
-            topicId: inputData.topicId,
-            topicCode: inputData.topicCode,
-            locations: response.output!
-        });
+        const locations = response.output as z.infer<typeof TopicGeographyAgent.topicLocations>;
+
+        try {
+            // 2. Call the Tome API to update the topic metadta
+            const result = await new TomeTopicsAPI(API_DEPENDENCIES.tomeTopics, this.config!).updateTopicMetadata(inputData.topicId, {
+                geoArea: locations && locations.length > 0 ? {
+                    mainArea: locations[0].zone,
+                    allAreas: locations.map(loc => loc.zone)
+                } : undefined
+            }, cid);
+
+            logger.compute(cid, `Result of topic [${inputData.topicId}] metadata update. Modified topics: ${JSON.stringify(result)}`, "info");
+
+            // 3. Return classification result
+            return new AgentTaskResponse("completed", cid, {
+                topicId: inputData.topicId,
+                topicCode: inputData.topicCode,
+                locations: response.output!,
+                numUpdatedTopics: result.modifiedTopics
+            });
+
+        } catch (error) {
+            logger.compute(cid, `Failed to update topic [${inputData.topicId}] metadata with geography information: ${error}`, "error");
+            throw new TotoRuntimeError(500, `Failed to update topic [${inputData.topicId}] metadata with geography information: ${error}`);
+        }
     }
 }
