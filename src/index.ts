@@ -4,15 +4,13 @@ import { Gale } from "./gale/Gale";
 import { OnTopicEventHandler } from "./evt/OnTopicEvent";
 import { DevQImpl } from "./DevQImpl";
 import { SectionClassificationAgent } from "./agents/practice/SectionClassificationAgent";
-import { SectionGenealogyAgent } from "./agents/practice/SectionGenealogyAgent";
 import { SectionTimelineAgent } from "./agents/practice/SectionTimelineAgent";
-import { GenealogicTreeAgent } from "./agents/practice/GenealogicTreeAgent";
-import { PersonalitiesConsolidationAgent } from "./agents/practice/PersonalitiesConsolidationAgent";
 import { PracticeBuilderOrchestratorAgent } from "./orchestrators/PracticeBuilderOrchestrator";
 import { SectionJuiceAgent } from "./agents/practice/SectionJuiceAgent";
 import { SectionContextAgent } from "./agents/practice/SectionContextAgent";
 import { JuiceChallengeAgent } from "./agents/practice/challenges/JuiceChallenceAgent";
 import { JuiceAnswerEvalAgent } from "./agents/practice/tests/JuiceAnswerEvalAgent";
+import { TopicGeographyAgent } from "./agents/practice/TopicGeographyAgent";
 
 const galeBrokerURL = `${String(process.env.GALE_BROKER_URL)}`;
 
@@ -31,14 +29,12 @@ const gale = new Gale(
 
 gale.registerAgent(new PracticeBuilderOrchestratorAgent());
 gale.registerAgent(new SectionClassificationAgent());
-gale.registerAgent(new SectionGenealogyAgent());
 gale.registerAgent(new SectionTimelineAgent());
-// gale.registerAgent(new PersonalitiesConsolidationAgent());
-// gale.registerAgent(new GenealogicTreeAgent());
 gale.registerAgent(new SectionJuiceAgent());
 gale.registerAgent(new SectionContextAgent());
 gale.registerAgent(new JuiceChallengeAgent());
 gale.registerAgent(new JuiceAnswerEvalAgent());
+gale.registerAgent(new TopicGeographyAgent());
 
 api.registerPubSubEventHandler('topic', new OnTopicEventHandler())
 

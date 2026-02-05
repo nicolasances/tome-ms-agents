@@ -1,0 +1,17 @@
+Your task is to analyze the following content and determine the geographic areas and main time period covered by this topic. 
+
+Important Rules about the Geographic Areas: 
+- Only select the main area. 
+- Order the area by order of importance. The first area should be the one that the Topic most obviously refers to. 
+- If there are doubts, order areas by frequency
+- Try to stick to a single area if possible: if it is clear that the text mainly focuses on events and facts related to a main geographic location (nation, area, city, continent, etc.), use that one ONLY.
+- Choose geographic areas among the following ONLY: {{geographicAreas}}
+
+Important Rules about the Time Period: 
+- The time period is generally defined by a start and end date and aims to define what period in history does the topic mainly refers to
+- Stick as much as possible to dates that are in the summarzied content of the topic. 
+
+This is the summarized content of the topic: 
+{{topicJuice}}
+
+Determine the most likely geographical areas covered by this topic. 
