@@ -5,6 +5,7 @@ import { GeographicAreas, TopicGeographicalLocation } from "../../model/TopicGeo
 import { TomeTopicsAPI } from "../../api/TomeTopicsAPI";
 import { TotoRuntimeError } from "toto-api-controller";
 import { API_DEPENDENCIES } from "../../Config";
+import { TopicDatesSchema } from "../../model/TopicDatesSchema";
 
 
 export class TopicGeographyAgent extends GaleAgent<typeof TopicGeographyAgent.inputSchema, typeof TopicGeographyAgent.outputSchema> {
@@ -18,14 +19,16 @@ export class TopicGeographyAgent extends GaleAgent<typeof TopicGeographyAgent.in
         juice: z.array(z.string()).describe("All the important aspects of the Topic."),
     })
 
-    static topicLocations = z.array(
-        TopicGeographicalLocation
-    ).describe("List of geographical locations that this Topic is mostly concerned with")
+    static modelOutputSchema = z.object({
+        locations: z.array(TopicGeographicalLocation).describe("List of geographical locations that this Topic is mostly concerned with"),
+        dates: TopicDatesSchema,
+    });
 
     static outputSchema = z.object({
         topicId: z.string().describe("Unique identifier (database ID) of the Tome Topic."),
         topicCode: z.string().describe("Unique code of the Tome Topic."),
-        locations: TopicGeographyAgent.topicLocations,
+        locations: z.array(TopicGeographicalLocation).describe("List of geographical locations that this Topic is mostly concerned with"),
+        dates: TopicDatesSchema,
         numUpdatedTopics: z.number().describe("Number of topics updated with geographical location information.")
     });
 
@@ -53,16 +56,20 @@ export class TopicGeographyAgent extends GaleAgent<typeof TopicGeographyAgent.in
             topicJuice: JSON.stringify(inputData.juice, null, 2)
         });
 
-        const response = await ai.generate({ prompt: prompt, outputSchema: TopicGeographyAgent.topicLocations });
+        const response = await ai.generate({ prompt: prompt, outputSchema: TopicGeographyAgent.modelOutputSchema });
 
-        const locations = response.output as z.infer<typeof TopicGeographyAgent.topicLocations>;
+        const modelOutput = response.output as z.infer<typeof TopicGeographyAgent.modelOutputSchema>;
 
         try {
             // 2. Call the Tome API to update the topic metadta
             const result = await new TomeTopicsAPI(API_DEPENDENCIES.tomeTopics, this.config!).updateTopicMetadata(inputData.topicId, {
-                geoArea: locations && locations.length > 0 ? {
-                    mainArea: locations[0].zone,
-                    allAreas: locations.map(loc => loc.zone)
+                geoArea: modelOutput.locations && modelOutput.locations.length > 0 ? {
+                    mainArea: modelOutput.locations[0].zone,
+                    allAreas: modelOutput.locations.map(loc => loc.zone)
+                } : undefined,
+                timePeriod: modelOutput.dates && (modelOutput.dates.startYear != null || modelOutput.dates.endYear != null) ? {
+                    startYear: modelOutput.dates.startYear ?? modelOutput.dates.endYear!,
+                    endYear: modelOutput.dates.endYear ?? modelOutput.dates.startYear!,
                 } : undefined
             }, cid);
 
@@ -72,7 +79,8 @@ export class TopicGeographyAgent extends GaleAgent<typeof TopicGeographyAgent.in
             return new AgentTaskResponse("completed", cid, {
                 topicId: inputData.topicId,
                 topicCode: inputData.topicCode,
-                locations: response.output!,
+                locations: modelOutput.locations,
+                dates: modelOutput.dates,
                 numUpdatedTopics: result.modifiedTopics
             });
 

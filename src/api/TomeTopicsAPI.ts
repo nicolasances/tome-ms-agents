@@ -61,5 +61,10 @@ export interface TopicMetadata {
     geoArea?: {
         mainArea: GeoArea;
         allAreas: GeoArea[];
-    }
+    },
+    timePeriod?: TimePeriodMetadata;
+}
+export interface TimePeriodMetadata {
+    startYear: number;
+    endYear: number;
 }
