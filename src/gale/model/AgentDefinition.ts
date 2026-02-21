@@ -1,4 +1,4 @@
-import { ValidationError } from "toto-api-controller";
+import { ValidationError } from "totoms";
 import { TaskEndpoint } from "./TaskEndpoint";
 import { TaskId } from "./TaskId";
 import { GaleAgentManifest } from "../GaleAgent";

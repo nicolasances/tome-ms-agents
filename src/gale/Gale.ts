@@ -1,4 +1,4 @@
-import { Logger, TotoAPIController } from "toto-api-controller";
+import { Logger, TotoAPIController, TotoMessageBus, TotoControllerConfig } from "totoms";
 import { agentNameToPath } from "./util/NamingUtils";
 import { GaleAgent } from "./GaleAgent";
 import { GaleAgentInfoDelegate, GaleAgentTaskDelegate } from "./GaleAgentDelegate";
@@ -14,11 +14,11 @@ export class Gale {
     public agentDefinitions: AgentDefinition[] = [];
 
     constructor(private config: GaleConfig, private options?: GaleOptions) {
-        this.logger = new Logger("Gale");
+        this.logger = Logger.getInstance();
 
-        if (this.options?.totoApiController) {
+        if (this.options?.totoApiController && this.options.messageBus && this.options.controllerConfig) {
 
-            this.options.totoApiController.path('POST', '/agentRegistrations', new GaleAgentsRegistrationDelegate(this));
+            this.options.totoApiController.path('POST', '/agentRegistrations', new GaleAgentsRegistrationDelegate(this, this.options.messageBus, this.options.controllerConfig));
         }
     }
 
@@ -36,13 +36,15 @@ export class Gale {
         if (this.options?.totoApiController?.options?.basePath) agentEndpoint = `${this.config.baseURL}${this.options.totoApiController.options.basePath}/agents/${agentPath}`;
 
         // If TotoAPIController is provided, register the Agent endpoint(s).
-        if (this.options?.totoApiController) {
+        if (this.options?.totoApiController && this.options.messageBus && this.options.controllerConfig) {
 
             const apiController = this.options.totoApiController;
+            const messageBus = this.options.messageBus;
+            const controllerConfig = this.options.controllerConfig;
 
             // Register the /tasks and /info endpoints for the Agent.
-            apiController.path('POST', agentTaskExecutionPath, new GaleAgentTaskDelegate(agent));
-            apiController.path('GET', agentInfoPath, new GaleAgentInfoDelegate(agent));
+            apiController.path('POST', agentTaskExecutionPath, new GaleAgentTaskDelegate(agent, messageBus, controllerConfig));
+            apiController.path('GET', agentInfoPath, new GaleAgentInfoDelegate(agent, messageBus, controllerConfig));
         }
 
         // Register the agent in Gale's internal registry (API call).
@@ -72,4 +74,6 @@ export interface GaleConfig {
 
 export interface GaleOptions {
     totoApiController?: TotoAPIController;
+    messageBus?: TotoMessageBus;
+    controllerConfig?: TotoControllerConfig;
 }

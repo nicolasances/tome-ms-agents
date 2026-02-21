@@ -1,4 +1,4 @@
-import { TotoAPI, TotoAPIRequest } from "toto-api-controller";
+import { TotoAPI, TotoAPIRequest } from "totoms";
 import { GeoArea } from "../model/TopicGeographicalLocationSchema";
 
 export class TomeTopicsAPI extends TotoAPI {

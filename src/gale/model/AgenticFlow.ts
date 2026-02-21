@@ -1,4 +1,4 @@
-import { ExecutionContext, TotoRuntimeError } from "toto-api-controller";
+import { TotoControllerConfig, TotoRuntimeError } from "totoms";
 import { StartTaskInputData, ResumeTaskInputData } from "./AgentTask";
 import { z } from "genkit";
 
@@ -99,10 +99,10 @@ export class AgentNode<T extends z.ZodTypeAny> extends AbstractNode {
 
 export class GroupNode extends AbstractNode {
     agents?: AgentNode<any>[];
-    agentsProvider?: (input: any, execContext: ExecutionContext) => Promise<AgentNode<any>[]>; // Function to provide agents dynamically
+    agentsProvider?: (input: any, config: TotoControllerConfig) => Promise<AgentNode<any>[]>; // Function to provide agents dynamically
     groupId: string;
 
-    constructor({ agents, agentsProvider, groupId, name, next }: { agents?: AgentNode<any>[], agentsProvider?: (input: any, execContext: ExecutionContext) => Promise<AgentNode<any>[]>, groupId: string, name?: string, next?: AbstractNode }) {
+    constructor({ agents, agentsProvider, groupId, name, next }: { agents?: AgentNode<any>[], agentsProvider?: (input: any, config: TotoControllerConfig) => Promise<AgentNode<any>[]>, groupId: string, name?: string, next?: AbstractNode }) {
         super();
 
         this.type = "group";

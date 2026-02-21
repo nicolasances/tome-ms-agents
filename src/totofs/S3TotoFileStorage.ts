@@ -1,5 +1,5 @@
 import { GetObjectCommand, ListObjectsV2Command, S3Client } from "@aws-sdk/client-s3";
-import { TotoControllerConfig, TotoRuntimeError } from "toto-api-controller";
+import { TotoControllerConfig, TotoRuntimeError } from "totoms";
 import { TotoFileStorage } from "./TotoFileStorage";
 
 /**

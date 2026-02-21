@@ -1,4 +1,4 @@
-import { ExecutionContext, Logger, TotoRuntimeError, ValidationError } from "toto-api-controller";
+import { Logger, TotoControllerConfig, TotoRuntimeError, ValidationError } from "totoms";
 import { DeterministicFlow as DeterministicFlow, FlowNode } from "../model/DeterministicFlow";
 import { AgenticFlow, AgentNode, BranchNode, GroupNode } from "../model/AgenticFlow";
 import { AgentTaskOrchestratorResponse, Command, ResumeCommand, TaskGroup } from "../model/AgentTask";
@@ -7,8 +7,8 @@ export class GaleOrchestrator {
 
     logger: Logger;
 
-    constructor(private flow: AgenticFlow, private correlationId: string, private execContext: ExecutionContext) {
-        this.logger = execContext.logger;
+    constructor(private flow: AgenticFlow, private correlationId: string, private config: TotoControllerConfig) {
+        this.logger = Logger.getInstance();
     }
 
     /**
@@ -107,7 +107,7 @@ export class GaleOrchestrator {
 
         // Get the agents for the group
         let agents = group.agents;
-        if (!agents && group.agentsProvider) agents = await group.agentsProvider(input, this.execContext);
+        if (!agents && group.agentsProvider) agents = await group.agentsProvider(input, this.config);
         if (!agents || agents.length === 0) throw new ValidationError(400, `No agents provided for group [${group.groupId}].`);
 
         const taskGroups = [

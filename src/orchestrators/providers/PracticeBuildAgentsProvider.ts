@@ -3,7 +3,7 @@ import { PracticeBuilderOrchestratorAgent } from "../PracticeBuilderOrchestrator
 import { AgentNode } from "../../gale/model/AgenticFlow";
 import { TomeTopicsAPI } from "../../api/TomeTopicsAPI";
 import { API_DEPENDENCIES, ControllerConfig } from "../../Config";
-import { ExecutionContext, TotoRuntimeError } from "toto-api-controller";
+import { TotoControllerConfig, TotoRuntimeError } from "totoms";
 import { SectionClassificationAgent } from "../../agents/practice/SectionClassificationAgent";
 import { SectionGenealogyAgent } from "../../agents/practice/SectionGenealogyAgent";
 import { SectionTimelineAgent } from "../../agents/practice/SectionTimelineAgent";
@@ -16,16 +16,15 @@ import { TopicGeographyAgent } from "../../agents/practice/TopicGeographyAgent";
 /**
  * Provides agents for the classification group in the practice build orchestrator.
  */
-export async function classificationAgents(input: z.infer<typeof PracticeBuilderOrchestratorAgent.inputSchema>, execContext: ExecutionContext): Promise<AgentNode<typeof SectionClassificationAgent.inputSchema>[]> {
+export async function classificationAgents(input: z.infer<typeof PracticeBuilderOrchestratorAgent.inputSchema>, config: TotoControllerConfig): Promise<AgentNode<typeof SectionClassificationAgent.inputSchema>[]> {
 
-    const config = execContext.config as ControllerConfig;
-    const cid = execContext.cid;
+    const controllerConfig = config as ControllerConfig;
 
     let sectionCodes = input.sections;
 
     if (!sectionCodes || sectionCodes.length === 0) {
         // Fetch the topic to get its sections
-        const topic = await new TomeTopicsAPI(API_DEPENDENCIES.tomeTopics, config).getTopic(input.topicId, cid);
+        const topic = await new TomeTopicsAPI(API_DEPENDENCIES.tomeTopics, controllerConfig).getTopic(input.topicId);
 
         if (!topic || !topic.sections || topic.sections.length === 0) throw new TotoRuntimeError(500, `Topic [${input.topicId}] has no sections defined.`);
 
@@ -55,7 +54,7 @@ export async function classificationAgents(input: z.infer<typeof PracticeBuilder
  * @param input expects inputs to be a LIST of SectionClassificationAgent.outputSchema
  * @param execContext 
  */
-export async function sectionGenealogyAgents(input: z.infer<typeof PracticeBuilderOrchestratorAgent.resumeInputSchema>, execContext: ExecutionContext): Promise<AgentNode<typeof SectionGenealogyAgent.inputSchema>[]> {
+export async function sectionGenealogyAgents(input: z.infer<typeof PracticeBuilderOrchestratorAgent.resumeInputSchema>, config: TotoControllerConfig): Promise<AgentNode<typeof SectionGenealogyAgent.inputSchema>[]> {
 
     const inputData = input.childrenOutputs as z.infer<typeof SectionClassificationAgent.outputSchema>[];
 

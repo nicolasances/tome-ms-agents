@@ -1,5 +1,5 @@
 import { Storage } from "@google-cloud/storage";
-import { TotoControllerConfig, TotoRuntimeError } from "toto-api-controller";
+import { TotoControllerConfig, TotoRuntimeError } from "totoms";
 import { TotoFileStorage } from "./TotoFileStorage";
 
 /**

@@ -1,5 +1,4 @@
-import { MongoClient } from 'mongodb';
-import { TotoControllerConfig, TotoControllerConfigOptions, ValidatorProps, Logger, SecretsManager, ConfigurationData } from "toto-api-controller";
+import { TotoControllerConfig, SecretsManager, APIOptions, TotoEnvironment, AWSConfiguration } from "totoms";
 
 const dbName = 'mydb';
 const collections = {
@@ -13,44 +12,37 @@ export const API_DEPENDENCIES = {
 
 export class ControllerConfig extends TotoControllerConfig {
 
-    logger: Logger | undefined;
-
-    mongoUser: string | undefined;
-    mongoPwd: string | undefined;
     galeBrokerURL: string;
+    environment: TotoEnvironment;
 
-    constructor(configuration: ConfigurationData, galeBrokerUrl?: string, controllerConfigOptions?: TotoControllerConfigOptions) {
-        super(configuration, controllerConfigOptions);
-        
+    constructor(secretsManager: SecretsManager, environment: TotoEnvironment, galeBrokerUrl?: string) {
+        super(secretsManager);
+
+        this.environment = environment;
         this.galeBrokerURL = galeBrokerUrl || String(process.env.GALE_BROKER_URL);
     }
 
     async load(): Promise<any> {
-
-        const promises = [];
-
-        promises.push(super.load());
-
-        // Other possible secrets to load:
-        // mongo-host
-        // mongo-user
-        // mongo-pswd
-        
-        await Promise.all(promises);
-
+        await super.load();
     }
 
-    getProps(): ValidatorProps {
+    getMongoSecretNames(): { userSecretName: string; pwdSecretName: string } | null {
+        return null;
+    }
 
-        return {
+    getProps(): APIOptions {
+        return {};
+    }
+
+    get hyperscaler(): TotoEnvironment['hyperscaler'] {
+        return this.environment.hyperscaler;
+    }
+
+    get env(): string {
+        if (this.environment.hyperscaler === 'aws') {
+            return (this.environment.hyperscalerConfiguration as AWSConfiguration).environment;
         }
-    }
-
-    async getMongoClient() {
-
-        const mongoUrl = `mongodb://${this.mongoUser}:${this.mongoPwd}@${this.mongoHost}:27017`
-
-        return await new MongoClient(mongoUrl).connect();
+        return 'dev';
     }
     
     getDBName() { return dbName }

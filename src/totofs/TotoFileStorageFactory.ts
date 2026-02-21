@@ -1,4 +1,5 @@
-import { TotoControllerConfig, TotoRuntimeError } from "toto-api-controller";
+import { TotoControllerConfig, TotoRuntimeError } from "totoms";
+import { ControllerConfig } from "../Config";
 import { GCSTotoFileStorage } from "./GCSTotoFileStorage";
 import { S3TotoFileStorage } from "./S3TotoFileStorage";
 import { TotoFileStorage } from "./TotoFileStorage";
@@ -19,17 +20,15 @@ export class TotoFileStorageFactory {
      */
     static create(config: TotoControllerConfig): TotoFileStorage {
         
-        switch (config.hyperscaler) {
+        const controllerConfig = config as ControllerConfig;
+
+        switch (controllerConfig.hyperscaler) {
             case 'gcp':
                 return new GCSTotoFileStorage(config);
             case 'aws':
                 return new S3TotoFileStorage(config);
-            case 'local':
-                // For local development, default to GCS, unless specified otherwise in the config
-                if (config.options?.defaultHyperscaler === 'aws') return new S3TotoFileStorage(config);
-                return new GCSTotoFileStorage(config);
             default:
-                throw new TotoRuntimeError(500, `Unsupported hyperscaler: ${config.hyperscaler}`);
+                throw new TotoRuntimeError(500, `Unsupported hyperscaler: ${controllerConfig.hyperscaler}`);
         }
     }
 }
