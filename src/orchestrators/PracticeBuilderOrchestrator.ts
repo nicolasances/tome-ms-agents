@@ -82,7 +82,7 @@ export class PracticeBuilderOrchestratorAgent extends GaleOrchestratorAgent<type
 
         const cid = task.correlationId;
 
-        const flow = new GaleOrchestrator(this.flow, cid!, this.execContext!);
+        const flow = new GaleOrchestrator(this.flow, cid!, this.config!);
 
         if (task.command.command === "start") {
             return await flow.start(task.taskInputData);

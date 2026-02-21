@@ -1,15 +1,14 @@
-import { ExecutionContext, Logger, TotoControllerConfig } from "toto-api-controller";
+import { Logger, TotoControllerConfig } from "totoms";
 import { AgentTaskRequest, AgentTaskResponse, AgentTaskOrchestratorResponse } from "./model/AgentTask";
 import { z } from "genkit";
-import { ValidationError } from "toto-api-controller";
+import { ValidationError } from "totoms";
 import { Prompt } from "./util/Prompt";
 import { GaleKit, LLMError, ModelId } from "./gentools/GaleKit";
 
 export abstract class GaleAgent<I extends z.ZodTypeAny, O extends z.ZodTypeAny> {
 
-    logger: Logger | undefined;
+    logger: Logger = Logger.getInstance();
     config: TotoControllerConfig | undefined;
-    execContext: ExecutionContext | undefined;
 
     protected options?: AgentRunOptions;
 
@@ -29,6 +28,7 @@ export abstract class GaleAgent<I extends z.ZodTypeAny, O extends z.ZodTypeAny> 
 
         const cid = task.correlationId || "no-cid";
         this.options = options;
+        this.logger = Logger.getInstance();
 
         this.logger?.compute(cid, `Running agent [${this.manifest.agentName} - ${this.manifest.taskId}] for task [${task.taskId}]`, "info");
 
@@ -103,7 +103,7 @@ export abstract class GaleAgent<I extends z.ZodTypeAny, O extends z.ZodTypeAny> 
      */
     protected ai(): GaleKit {
 
-        if (this.options?.playground?.modelOverride) this.logger?.compute(this.execContext?.cid || "no-cid", `Overriding model to [${this.options.playground.modelOverride}] as per playground settings`, "info");
+        if (this.options?.playground?.modelOverride) this.logger?.compute("no-cid", `Overriding model to [${this.options.playground.modelOverride}] as per playground settings`, "info");
 
         return GaleKit.gale({ model: this.options?.playground?.modelOverride || this.manifest.model, host: { region: "eu-north-1" } });
     }

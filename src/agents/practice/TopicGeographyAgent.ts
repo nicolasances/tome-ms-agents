@@ -3,7 +3,7 @@ import { GaleAgent, GaleAgentManifest } from "../../gale/GaleAgent";
 import { AgentTaskRequest, AgentTaskResponse } from "../../gale/model/AgentTask";
 import { GeographicAreas, TopicGeographicalLocation } from "../../model/TopicGeographicalLocationSchema";
 import { TomeTopicsAPI } from "../../api/TomeTopicsAPI";
-import { TotoRuntimeError } from "toto-api-controller";
+import { TotoRuntimeError } from "totoms";
 import { API_DEPENDENCIES } from "../../Config";
 import { TopicDatesSchema } from "../../model/TopicDatesSchema";
 

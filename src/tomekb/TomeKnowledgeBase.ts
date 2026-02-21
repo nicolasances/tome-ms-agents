@@ -1,4 +1,5 @@
-import { TotoControllerConfig, TotoRuntimeError } from "toto-api-controller";
+import { TotoControllerConfig, TotoRuntimeError } from "totoms";
+import { ControllerConfig } from "../Config";
 import { TotoFileStorage } from "../totofs/TotoFileStorage";
 import { TotoFileStorageFactory } from "../totofs/TotoFileStorageFactory";
 
@@ -11,17 +12,19 @@ export class TomeKnowledgeBase {
 
         this.totoStorage = TotoFileStorageFactory.create(config);
 
-        switch (config.hyperscaler) {
+        const controllerConfig = config as ControllerConfig;
+
+        switch (controllerConfig.hyperscaler) {
             case 'gcp':
                 this.bucketName = `${process.env['GCP_PID']}-tome-bucket`;
                 break;
 
             case 'aws':
-                this.bucketName = `toto-tome-bucket-${config.env}`;
+                this.bucketName = `toto-tome-bucket-${controllerConfig.env}`;
                 break;
 
             default:
-                this.bucketName = config.options?.defaultHyperscaler === 'aws' ? `toto-tome-bucket-${config.env}` : `${process.env['GCP_PID']}-tome-bucket`;
+                this.bucketName = `${process.env['GCP_PID']}-tome-bucket`;
                 break;
         }
 

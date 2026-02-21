@@ -1,4 +1,4 @@
-import { TotoControllerConfig } from "toto-api-controller";
+import { TotoControllerConfig } from "totoms";
 
 
 export abstract class TotoFileStorage {

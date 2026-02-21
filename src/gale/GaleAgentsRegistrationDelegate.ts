@@ -1,26 +1,37 @@
 import { Request } from "express";
-import { ExecutionContext, TotoDelegate, UserContext } from "toto-api-controller";
+import { TotoDelegate, UserContext, TotoMessageBus, TotoControllerConfig, TotoRequest, Logger } from "totoms";
 import { Gale } from "./Gale";
 import { GaleBrokerAPI } from "./integration/GaleBrokerAPI";
 import { ControllerConfig } from "../Config";
+
+/**
+ * Request type for agent registration requests.
+ */
+export class AgentRegistrationDelegateRequest extends TotoRequest {}
 
 /**
  * Delegate to force registration of all Gale Agents.
  * 
  * This provides an endpoint for re-registering all agents in Gale Broker.
  */
-export class GaleAgentsRegistrationDelegate implements TotoDelegate {
+export class GaleAgentsRegistrationDelegate extends TotoDelegate<AgentRegistrationDelegateRequest, any> {
 
-    constructor(private gale: Gale) { }
+    constructor(private gale: Gale, messageBus: TotoMessageBus, config: TotoControllerConfig) {
+        super(messageBus, config);
+    }
 
-    async do(req: Request, userContext: UserContext, execContext: ExecutionContext): Promise<any> {
+    parseRequest(req: Request): AgentRegistrationDelegateRequest {
+        return new AgentRegistrationDelegateRequest();
+    }
 
-        const config = execContext.config as ControllerConfig;
+    async do(req: AgentRegistrationDelegateRequest, userContext?: UserContext): Promise<any> {
+
+        const config = this.config as ControllerConfig;
 
         // For each agent in Gale, register it again.
         const promises = this.gale.agentDefinitions.map(async agentDefinition => {
 
-            execContext.logger.compute(execContext.cid, `Re-registering Agent [ ${agentDefinition.name} ] for task [ ${agentDefinition.taskId} ] with Gale Broker.`, "info");
+            Logger.getInstance().compute(this.cid || "no-cid", `Re-registering Agent [ ${agentDefinition.name} ] for task [ ${agentDefinition.taskId} ] with Gale Broker.`, "info");
 
             // Register the agent using Gale Broker API
             return new GaleBrokerAPI(config.galeBrokerURL).registerAgent({
@@ -31,7 +42,7 @@ export class GaleAgentsRegistrationDelegate implements TotoDelegate {
 
         await Promise.all(promises);
 
-        execContext.logger.compute(execContext.cid, `Re-registered ${promises.length} agents with Gale Broker.`, "info");
+        Logger.getInstance().compute(this.cid || "no-cid", `Re-registered ${promises.length} agents with Gale Broker.`, "info");
 
         return {
             message: `Re-registered ${promises.length} agents with Gale Broker.`

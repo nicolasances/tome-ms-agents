@@ -1,8 +1,7 @@
-import { TotoAPIController } from "toto-api-controller";
+import { TotoAPIController, TotoMessageBus, SecretsManager, TotoEnvironment, Logger, getHyperscalerConfiguration } from "totoms";
 import { ControllerConfig } from "./Config";
 import { Gale } from "./gale/Gale";
 import { OnTopicEventHandler } from "./evt/OnTopicEvent";
-import { DevQImpl } from "./DevQImpl";
 import { SectionClassificationAgent } from "./agents/practice/SectionClassificationAgent";
 import { SectionTimelineAgent } from "./agents/practice/SectionTimelineAgent";
 import { PracticeBuilderOrchestratorAgent } from "./orchestrators/PracticeBuilderOrchestrator";
@@ -14,30 +13,49 @@ import { TopicGeographyAgent } from "./agents/practice/TopicGeographyAgent";
 
 const galeBrokerURL = `${String(process.env.GALE_BROKER_URL)}`;
 
-const config = new ControllerConfig({ apiName: "tome-ms-agents" }, galeBrokerURL, { defaultHyperscaler: "aws", defaultSecretsManagerLocation: "aws" });
+const environment: TotoEnvironment = {
+    hyperscaler: (process.env.HYPERSCALER as any) || "aws",
+    hyperscalerConfiguration: getHyperscalerConfiguration()
+};
 
-const api = new TotoAPIController(config, { basePath: '/tomeagents' });
-api.registerPubSubImplementation(new DevQImpl(config, config.logger!));
+Logger.init("tome-ms-agents");
 
-const gale = new Gale(
-    {
-        baseURL: process.env.SERVICE_BASE_URL!,
-        galeBrokerURL: galeBrokerURL
-    },
-    { totoApiController: api }
-);
+const secretsManager = new SecretsManager(environment);
+const config = new ControllerConfig(secretsManager, environment, galeBrokerURL);
 
-gale.registerAgent(new PracticeBuilderOrchestratorAgent());
-gale.registerAgent(new SectionClassificationAgent());
-gale.registerAgent(new SectionTimelineAgent());
-gale.registerAgent(new SectionJuiceAgent());
-gale.registerAgent(new SectionContextAgent());
-gale.registerAgent(new JuiceChallengeAgent());
-gale.registerAgent(new JuiceAnswerEvalAgent());
-gale.registerAgent(new TopicGeographyAgent());
+config.load().then(async () => {
 
-api.registerPubSubEventHandler('topic', new OnTopicEventHandler())
+    const api = new TotoAPIController(
+        { apiName: "tome-ms-agents", environment: environment, config: config },
+        { basePath: '/tomeagents' }
+    );
 
-api.init().then(() => {
-    api.listen()
+    const messageBus = new TotoMessageBus({
+        controller: api,
+        customConfig: config,
+        environment: environment,
+        topics: []
+    });
+
+    messageBus.registerMessageHandler(new OnTopicEventHandler(config, messageBus));
+
+    const gale = new Gale(
+        {
+            baseURL: process.env.SERVICE_BASE_URL!,
+            galeBrokerURL: galeBrokerURL
+        },
+        { totoApiController: api, messageBus: messageBus, controllerConfig: config }
+    );
+
+    await gale.registerAgent(new PracticeBuilderOrchestratorAgent());
+    await gale.registerAgent(new SectionClassificationAgent());
+    await gale.registerAgent(new SectionTimelineAgent());
+    await gale.registerAgent(new SectionJuiceAgent());
+    await gale.registerAgent(new SectionContextAgent());
+    await gale.registerAgent(new JuiceChallengeAgent());
+    await gale.registerAgent(new JuiceAnswerEvalAgent());
+    await gale.registerAgent(new TopicGeographyAgent());
+
+    await api.init();
+    api.listen();
 });

@@ -1,4 +1,4 @@
-import { TotoAPI, TotoAPIRequest } from "toto-api-controller";
+import { TotoAPI, TotoAPIRequest } from "totoms";
 import { TomeChallenge } from "./model/TomeChallenge";
 
 export class TomeChallengesAPI extends TotoAPI {

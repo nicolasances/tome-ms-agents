@@ -1,12 +1,11 @@
 import http from "request";
 import { AgentDefinition } from "../model/AgentDefinition";
 import { AgentTaskRequest, AgentTaskResponse } from "../model/AgentTask";
-import { ExecutionContext } from "toto-api-controller";
 import { v4 as uuidv4 } from "uuid";
 
 export class GaleBrokerAPI {
 
-    constructor(private galeBrokerURL: string, private execContext?: ExecutionContext) { }
+    constructor(private galeBrokerURL: string, private cid?: string) { }
 
     /**
      * Executes the agent with the given input.
@@ -65,7 +64,7 @@ export class GaleBrokerAPI {
                 uri: `${this.galeBrokerURL}/tasks`,
                 method: 'POST',
                 headers: {
-                    'x-correlation-id': this.execContext?.cid || uuidv4(),
+                    'x-correlation-id': this.cid || uuidv4(),
                     'Authorization': `Bearer ${token}`,
                     'Content-Type': 'application/json'
                 },

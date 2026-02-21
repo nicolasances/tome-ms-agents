@@ -1,42 +1,44 @@
-import { ExecutionContext, ITotoPubSubEventHandler, newTotoServiceToken, TotoMessage } from "toto-api-controller";
+import { TotoMessageHandler, ProcessingResponse, newTotoServiceToken, TotoMessage, TotoControllerConfig, TotoMessageBus, Logger } from "totoms";
 import { GaleBrokerAPI } from "../gale/integration/GaleBrokerAPI";
 import { ControllerConfig } from "../Config";
 import { AgentTaskRequest } from "../gale/model/AgentTask";
 import { PracticeBuilderOrchestratorAgent } from "../orchestrators/PracticeBuilderOrchestrator";
 
 /**
- * Event handler for 'topic' events.
+ * Event handler for 'topicScraped' events.
  */
-export class OnTopicEventHandler implements ITotoPubSubEventHandler {
+export class OnTopicEventHandler extends TotoMessageHandler {
 
-    async onEvent(msg: TotoMessage, execContext: ExecutionContext): Promise<any> {
+    protected handledMessageType: string = TOPIC_EVENTS.topicScraped;
 
-        const logger = execContext.logger;
+    constructor(config: TotoControllerConfig, messageBus: TotoMessageBus) {
+        super(config, messageBus);
+    }
+
+    async onMessage(msg: TotoMessage): Promise<ProcessingResponse> {
+
         const cid = msg.cid || "no-cid";
 
-        if (msg.type === TOPIC_EVENTS.topicScraped) {
+        // Get a JWT Token
+        const token = newTotoServiceToken(this.config);
 
-            // Get a JWT Token
-            const token = newTotoServiceToken(execContext.config);
-
-            // Create the task
-            const task: AgentTaskRequest<any> = {
-                taskId: PracticeBuilderOrchestratorAgent.taskId,
-                command: { command: 'start' },
-                taskInputData: {
-                    topicId: msg.data.topicId,
-                    topicCode: msg.data.topicCode,
-                    sections: msg.data.sections
-                }
+        // Create the task
+        const task: AgentTaskRequest<any> = {
+            taskId: PracticeBuilderOrchestratorAgent.taskId,
+            command: { command: 'start' },
+            taskInputData: {
+                topicId: msg.data.topicId,
+                topicCode: msg.data.topicCode,
+                sections: msg.data.sections
             }
-
-            // Trigger a Practice Builder Agent task
-            const result = await new GaleBrokerAPI((execContext.config as ControllerConfig).galeBrokerURL, execContext).postTask(task, token);
-
-            logger.compute(cid, `Triggered task ${task.taskId} on topic [${msg.data.topicCode}]. Task Output: [${result.taskOutput}].`, "info");
         }
 
-        return { consumed: false }
+        // Trigger a Practice Builder Agent task
+        const result = await new GaleBrokerAPI((this.config as ControllerConfig).galeBrokerURL, cid).postTask(task, token);
+
+        Logger.getInstance().compute(cid, `Triggered task ${task.taskId} on topic [${msg.data.topicCode}]. Task Output: [${JSON.stringify(result)}].`, "info");
+
+        return { status: "processed", responsePayload: result }
 
     }
 
